@@ -14,8 +14,8 @@ This repository contains the pipeline to ingest live tennis data (Head-to-Head o
 ## 🚀 Current Status: Sprint 1 (Raw Data Ingestion)
 - [x] Set up GCP Infrastructure (Storage Buckets, IAM, Billing).
 - [x] Create base Python script to connect to The-Odds-API.
-- [ ] Configure virtual environment and local execution.
-- [ ] Connect Python script to GCP Cloud Storage.
+- [x] Configure virtual environment and local execution.
+- [x] Connect Python script to GCP Cloud Storage.
 
 ---
 *Developed by Mateo*

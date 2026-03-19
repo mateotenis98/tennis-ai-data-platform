@@ -12,8 +12,11 @@
 - Data extraction scripts go in `src/ingestion/`.
 - Temporary raw data goes in `data/raw/` (ensure this is in .gitignore).
 
-## CURRENT FOCUS: Sprint 1 (API to GCS)
-Our current goal is to extract data from The-Odds-API and land the raw JSON file into a Google Cloud Storage (GCS) bucket.
+## Sprint 1 (API to GCS) — COMPLETE ✓
+Local execution and GCP Cloud Storage upload are 100% done. The pipeline successfully fetches H2H odds from The-Odds-API and lands raw JSON files in GCS.
+
+## CURRENT FOCUS: Sprint 2
+Ready to begin Sprint 2. Awaiting scope definition.
 
 ## Git Workflow
 Before finishing a task, ask for permission to stage changes and create a conventional commit (e.g., `feat: integrate GCS upload`).
