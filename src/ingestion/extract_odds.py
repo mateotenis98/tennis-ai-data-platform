@@ -3,7 +3,7 @@
 import json
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 import requests
 from dotenv import load_dotenv
@@ -67,7 +67,7 @@ def upload_to_gcs(data: list[dict], bucket_name: str) -> str:
     Raises:
         google.cloud.exceptions.GoogleCloudError: On any GCS failure.
     """
-    timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     blob_name = f"raw/tennis_odds_{timestamp}.json"
 
     client = storage.Client()
@@ -82,3 +82,13 @@ def upload_to_gcs(data: list[dict], bucket_name: str) -> str:
     gcs_uri = f"gs://{bucket_name}/{blob_name}"
     logger.info("Uploaded %d events to %s", len(data), gcs_uri)
     return gcs_uri
+
+
+if __name__ == "__main__":
+    bucket = os.getenv("GCP_BUCKET_NAME")
+    if not bucket:
+        raise EnvironmentError("GCP_BUCKET_NAME is not set in the environment.")
+
+    odds_data = fetch_odds()
+    uri = upload_to_gcs(odds_data, bucket)
+    print(f"Success! Data uploaded to: {uri}")
