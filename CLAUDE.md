@@ -18,5 +18,8 @@ Local execution and GCP Cloud Storage upload are 100% done. The pipeline success
 ## CURRENT FOCUS: Sprint 2
 Ready to begin Sprint 2. Awaiting scope definition.
 
+## Multi-Agent Routing
+When working on ETL, data cleaning, or BigQuery tasks (Sprint 2), ALWAYS read `docs/DATA_ENGINEER.md` first to adopt the Data Engineer persona and constraints.
+
 ## Git Workflow
 Before finishing a task, ask for permission to stage changes and create a conventional commit (e.g., `feat: integrate GCS upload`).
