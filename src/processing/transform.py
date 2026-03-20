@@ -1,0 +1,80 @@
+"""Module for flattening raw odds JSON from The-Odds-API into a tabular DataFrame."""
+
+import logging
+from datetime import datetime, timezone
+
+import pandas as pd
+
+logger = logging.getLogger(__name__)
+
+
+def flatten_odds(data: list[dict]) -> pd.DataFrame:
+    """Flatten a list of nested odds event dicts into a 14-column DataFrame.
+
+    Each row in the output represents a single outcome (e.g. one player's
+    price) for a specific market, bookmaker, and event. The nesting path is:
+    event → bookmakers → markets → outcomes.
+
+    Args:
+        data: Raw list of event dicts as returned by The-Odds-API.
+
+    Returns:
+        A pandas DataFrame with the following columns:
+            event_id, sport_key, sport_title, home_team, away_team,
+            commence_time, bookmaker_key, bookmaker_title,
+            bookmaker_last_update, market_key, market_last_update,
+            outcome_name, price, ingested_at.
+
+    Raises:
+        ValueError: If ``data`` is empty.
+    """
+    if not data:
+        raise ValueError("Input data list is empty — nothing to flatten.")
+
+    rows: list[dict] = []
+    ingested_at = datetime.now(timezone.utc)
+
+    for event in data:
+        event_base = {
+            "event_id": event.get("id"),
+            "sport_key": event.get("sport_key"),
+            "sport_title": event.get("sport_title"),
+            "home_team": event.get("home_team"),
+            "away_team": event.get("away_team"),
+            "commence_time": event.get("commence_time"),
+        }
+
+        for bookmaker in event.get("bookmakers", []):
+            bookmaker_base = {
+                "bookmaker_key": bookmaker.get("key"),
+                "bookmaker_title": bookmaker.get("title"),
+                "bookmaker_last_update": bookmaker.get("last_update"),
+            }
+
+            for market in bookmaker.get("markets", []):
+                market_base = {
+                    "market_key": market.get("key"),
+                    "market_last_update": market.get("last_update"),
+                }
+
+                for outcome in market.get("outcomes", []):
+                    rows.append({
+                        **event_base,
+                        **bookmaker_base,
+                        **market_base,
+                        "outcome_name": outcome.get("name"),
+                        "price": outcome.get("price"),
+                        "ingested_at": ingested_at,
+                    })
+
+    df = pd.DataFrame(rows)
+
+    # Cast timestamp columns to UTC-aware datetime
+    for col in ("commence_time", "bookmaker_last_update", "market_last_update"):
+        df[col] = pd.to_datetime(df[col], utc=True)
+
+    # ingested_at is already a datetime object; ensure consistent dtype
+    df["ingested_at"] = pd.to_datetime(df["ingested_at"], utc=True)
+
+    logger.info("Flattened %d events into %d rows.", len(data), len(df))
+    return df
