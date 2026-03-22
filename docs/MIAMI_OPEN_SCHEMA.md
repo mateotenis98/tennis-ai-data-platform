@@ -1,7 +1,6 @@
 # Miami Open – Odds Data Schema
 
-> **Status:** Draft — to be confirmed after running `notebooks/01_miami_open_eda.ipynb` on real data.
-> Update this document with actual findings before building `src/processing/transform.py`.
+> **Status:** Confirmed after EDA in `notebooks/01_miami_open_eda.ipynb`.
 
 ## Source
 - **API:** The-Odds-API v4
@@ -17,43 +16,40 @@
   └── event
         ├── id                  (str)  unique event ID
         ├── sport_key           (str)  "tennis_atp_miami_open"
-        ├── sport_title         (str)  human-readable sport name
+        ├── sport_title         (str)  "ATP Miami Open"
         ├── commence_time       (str)  ISO 8601 UTC timestamp
-        ├── home_team           (str)  player name
-        ├── away_team           (str)  player name
+        ├── home_team           (str)  player name → player_1
+        ├── away_team           (str)  player name → player_2
         └── bookmakers          (list)
               └── bookmaker
-                    ├── key         (str)  bookmaker identifier
-                    ├── title       (str)  bookmaker display name
-                    ├── last_update (str)  ISO 8601 UTC timestamp
+                    ├── key         (str)   bookmaker identifier
+                    ├── title       (str)   bookmaker display name
+                    ├── last_update (str)   ISO 8601 UTC timestamp
                     └── markets     (list)
-                          └── market
-                                ├── key      (str)  "h2h"
-                                └── outcomes (list)
+                          └── market (key = "h2h")
+                                └── outcomes (list, always 2 for h2h)
                                       └── outcome
                                             ├── name  (str)   player name
-                                            └── price (float) American or decimal odds
+                                            └── price (float) decimal odds
 ```
 
-## Target Flat Schema (BigQuery)
+## Final Flat Schema (confirmed)
 
-> Confirm column names, types, and nullability after EDA.
+One row per match per bookmaker. **69 rows for 12 matches across 7 bookmakers.**
 
 | Column | Type | Notes |
 |---|---|---|
 | `event_id` | STRING | Unique per match |
-| `commence_time` | TIMESTAMP | Parse from ISO 8601 |
-| `home_team` | STRING | |
-| `away_team` | STRING | |
-| `bookmaker_key` | STRING | |
-| `bookmaker_title` | STRING | |
-| `last_update` | TIMESTAMP | Parse from ISO 8601 |
-| `market_key` | STRING | Always `h2h` for this pipeline |
-| `outcome_name` | STRING | Player name (matches home_team or away_team) |
-| `price` | FLOAT | Odds value |
+| `commence_time` | TIMESTAMP | Parse from ISO 8601 UTC |
+| `bookmaker` | STRING | Display name (e.g. "DraftKings") |
+| `player_1` | STRING | home_team from raw event |
+| `price_1` | FLOAT | Decimal odds for player_1 |
+| `player_2` | STRING | away_team from raw event |
+| `price_2` | FLOAT | Decimal odds for player_2 |
 
-## Transform Decisions
-> Fill in after EDA:
-> - Timestamp parsing approach
-> - Null handling strategy
-> - Any anomalies found (missing bookmakers, duplicate outcomes, etc.)
+## Key Findings from EDA
+- **Zero nulls** across all fields — very clean data
+- **Prices are decimal odds** (e.g. 1.42 = 1.42x stake), not American odds
+- **3–7 bookmakers per match** (avg 5.8): BetRivers, DraftKings, FanDuel, Bovada, LowVig, BetOnline, BetUS
+- `home_team` / `away_team` always map cleanly to the two h2h outcomes
+- `commence_time` and `last_update` need to be parsed to TIMESTAMP for BigQuery
