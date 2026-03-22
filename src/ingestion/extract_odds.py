@@ -1,9 +1,10 @@
-"""Module for extracting tennis odds from The-Odds-API and uploading to GCS."""
+"""Module for extracting tennis odds from The-Odds-API and uploading to GCS or saving locally."""
 
 import json
 import logging
 import os
 from datetime import datetime, timezone
+from pathlib import Path
 
 import requests
 from dotenv import load_dotenv
@@ -15,7 +16,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s â€” %(levelname)s â€
 logger = logging.getLogger(__name__)
 
 _BASE_URL = "https://api.the-odds-api.com/v4/sports"
-_SPORT = "upcoming"
+_SPORT = "tennis_atp_miami_open"
 _REGIONS = "us"
 _MARKETS = "h2h"
 
@@ -48,6 +49,27 @@ def fetch_odds() -> list[dict]:
     data: list[dict] = response.json()
     logger.info("Fetched %d events successfully.", len(data))
     return data
+
+
+def save_locally(data: list[dict], output_dir: str = "data/raw") -> Path:
+    """Serialize data as JSON and save it to a local directory for sandbox exploration.
+
+    Args:
+        data: The list of event dicts to save.
+        output_dir: Relative path to the local output directory.
+
+    Returns:
+        The Path of the saved file.
+    """
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    out_path = Path(output_dir) / f"tennis_odds_{timestamp}.json"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
+
+    logger.info("Saved %d events locally to %s", len(data), out_path)
+    return out_path
 
 
 def upload_to_gcs(data: list[dict], bucket_name: str) -> str:
@@ -85,10 +107,8 @@ def upload_to_gcs(data: list[dict], bucket_name: str) -> str:
 
 
 if __name__ == "__main__":
-    bucket = os.getenv("GCP_BUCKET_NAME")
-    if not bucket:
-        raise EnvironmentError("GCP_BUCKET_NAME is not set in the environment.")
-
+    # Sprint 2 sandbox mode: save locally for EDA before promoting to GCP.
+    # To upload to GCS instead, call upload_to_gcs() with GCP_BUCKET_NAME.
     odds_data = fetch_odds()
-    uri = upload_to_gcs(odds_data, bucket)
-    print(f"Success! Data uploaded to: {uri}")
+    local_path = save_locally(odds_data)
+    print(f"Success! Data saved locally to: {local_path}")
