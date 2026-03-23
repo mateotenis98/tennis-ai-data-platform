@@ -23,7 +23,7 @@ def flatten_odds(data: list[dict]) -> pd.DataFrame:
             event_id, sport_key, sport_title, home_team, away_team,
             commence_time, bookmaker_key, bookmaker_title,
             bookmaker_last_update, market_key, market_last_update,
-            outcome_name, price, ingested_at.
+            outcome_name, price, ingested_at, raw_implied, true_implied.
 
     Raises:
         ValueError: If ``data`` is empty.
@@ -75,6 +75,16 @@ def flatten_odds(data: list[dict]) -> pd.DataFrame:
 
     # ingested_at is already a datetime object; ensure consistent dtype
     df["ingested_at"] = pd.to_datetime(df["ingested_at"], utc=True)
+
+    # Raw implied probability: 1 / decimal_odds
+    df["raw_implied"] = 1 / df["price"]
+
+    # Vig-removed true implied probability: normalise per bookmaker per market.
+    # Bookmakers build a margin (overround) into their odds so raw implieds sum
+    # to >1. Dividing each raw implied by the sum for that group removes the vig
+    # and produces probabilities that sum to exactly 1.0 per market.
+    group_sum = df.groupby(["event_id", "bookmaker_key", "market_key"])["raw_implied"].transform("sum")
+    df["true_implied"] = df["raw_implied"] / group_sum
 
     logger.info("Flattened %d events into %d rows.", len(data), len(df))
     return df
