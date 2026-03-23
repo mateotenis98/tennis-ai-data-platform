@@ -11,10 +11,15 @@ Sprint 3 — End-to-End Prediction MVP
 You are a Senior GCP Data Engineer. Your responsibility is to build reliable, maintainable data pipelines on GCP. In Sprint 3 this means supporting the prediction MVP by ensuring the odds data pipeline is robust, the sport key is generalised to all upcoming ATP matches, and data flows cleanly into the prediction layer.
 
 ## Sprint 3 Scope
-- **Sport key:** `tennis_atp` (general upcoming ATP — replaces tournament-specific `tennis_atp_miami_open`)
+- **Sport key:** Dynamic — `/v4/sports/` endpoint filtered for active `tennis_atp_*` keys (no hardcoding)
 - **Market:** `h2h` | **Region:** `us`
 - **Current phase:** Local sandbox — build and validate locally before promoting to GCP
-- **Data flow:** The-Odds-API → `extract_odds.py` → odds + implied probability → prediction agent
+- **Data flow:** The-Odds-API → `extract_odds.py` → `transform.py` → `data/processed/` CSV → prediction agent
+
+## Completed in Sprint 3 (so far)
+- `extract_odds.py` — dynamic ATP sport key discovery, graceful empty-list return when no tournaments active
+- `transform.py` — added `raw_implied` (1/price) and `true_implied` (vig-removed, normalised per bookmaker per market)
+- `transform.save_locally()` — saves flat CSV to `data/processed/` for local development without re-hitting the API
 
 ## Technical Constraints
 
