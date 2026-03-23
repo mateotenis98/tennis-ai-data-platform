@@ -16,39 +16,88 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s — %(levelname)s �
 logger = logging.getLogger(__name__)
 
 _BASE_URL = "https://api.the-odds-api.com/v4/sports"
-_SPORT = "tennis_atp_miami_open"
+_ATP_KEY_PREFIX = "tennis_atp_"
 _REGIONS = "us"
 _MARKETS = "h2h"
 
 
-def fetch_odds() -> list[dict]:
-    """Fetch upcoming tennis H2H odds from The-Odds-API.
+def fetch_active_atp_sport_keys(api_key: str) -> list[str]:
+    """Fetch all currently active ATP singles tournament sport keys from The-Odds-API.
+
+    Queries the /v4/sports/ endpoint and filters for keys prefixed with
+    'tennis_atp_', which covers all active ATP singles tournaments. This
+    avoids hardcoding tournament names since tournaments are ephemeral
+    (typically 1-2 weeks long).
+
+    Args:
+        api_key: The-Odds-API authentication key.
 
     Returns:
-        A list of event dicts returned by the API.
+        A list of active ATP sport key strings (e.g. ['tennis_atp_monte_carlo']).
+        Returns an empty list if no ATP tournaments are currently active.
+
+    Raises:
+        requests.HTTPError: If the API returns a non-200 status code.
+    """
+    url = f"{_BASE_URL}/"
+    response = requests.get(url, params={"apiKey": api_key}, timeout=30)
+    response.raise_for_status()
+
+    all_sports: list[dict] = response.json()
+    atp_keys = [
+        sport["key"]
+        for sport in all_sports
+        if sport["key"].startswith(_ATP_KEY_PREFIX) and sport.get("active", False)
+    ]
+
+    logger.info("Found %d active ATP tournament(s): %s", len(atp_keys), atp_keys)
+    return atp_keys
+
+
+def fetch_odds() -> list[dict]:
+    """Fetch upcoming H2H odds for all active ATP tournaments from The-Odds-API.
+
+    Dynamically discovers active ATP sport keys so no tournament name is
+    ever hardcoded. Returns an empty list if no ATP tournaments are active,
+    which the UI should surface as 'no upcoming matches'.
+
+    Returns:
+        A combined list of event dicts across all active ATP tournaments.
+        Empty list if no active tournaments are found.
 
     Raises:
         EnvironmentError: If THE_ODDS_API_KEY is not set.
-        requests.HTTPError: If the API returns a non-200 status code.
+        requests.HTTPError: If any API call returns a non-200 status code.
     """
     api_key = os.getenv("THE_ODDS_API_KEY")
     if not api_key:
         raise EnvironmentError("THE_ODDS_API_KEY is not set in the environment.")
 
-    url = f"{_BASE_URL}/{_SPORT}/odds/"
+    sport_keys = fetch_active_atp_sport_keys(api_key)
+
+    if not sport_keys:
+        logger.warning("No active ATP tournaments found. Returning empty event list.")
+        return []
+
+    all_events: list[dict] = []
     params = {
         "apiKey": api_key,
         "regions": _REGIONS,
         "markets": _MARKETS,
     }
 
-    logger.info("Fetching %s odds from The-Odds-API (regions=%s, markets=%s)...", _SPORT, _REGIONS, _MARKETS)
-    response = requests.get(url, params=params, timeout=30)
-    response.raise_for_status()
+    for sport_key in sport_keys:
+        url = f"{_BASE_URL}/{sport_key}/odds/"
+        logger.info("Fetching odds for %s (regions=%s, markets=%s)...", sport_key, _REGIONS, _MARKETS)
+        response = requests.get(url, params=params, timeout=30)
+        response.raise_for_status()
 
-    data: list[dict] = response.json()
-    logger.info("Fetched %d events successfully.", len(data))
-    return data
+        events: list[dict] = response.json()
+        logger.info("Fetched %d events for %s.", len(events), sport_key)
+        all_events.extend(events)
+
+    logger.info("Total events fetched across all ATP tournaments: %d", len(all_events))
+    return all_events
 
 
 def save_locally(data: list[dict], output_dir: str = "data/raw") -> Path:
@@ -107,8 +156,11 @@ def upload_to_gcs(data: list[dict], bucket_name: str) -> str:
 
 
 if __name__ == "__main__":
-    # Sprint 2 sandbox mode: save locally for EDA before promoting to GCP.
-    # To upload to GCS instead, call upload_to_gcs() with GCP_BUCKET_NAME.
+    # Sprint 3 sandbox mode: fetch all active ATP tournaments dynamically.
+    # Returns empty list if no tournaments are active — UI handles this case.
     odds_data = fetch_odds()
-    local_path = save_locally(odds_data)
-    print(f"Success! Data saved locally to: {local_path}")
+    if not odds_data:
+        print("No upcoming ATP matches found. Try again when a tournament is active.")
+    else:
+        local_path = save_locally(odds_data)
+        print(f"Success! {len(odds_data)} events saved locally to: {local_path}")
