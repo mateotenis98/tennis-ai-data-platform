@@ -2,6 +2,7 @@
 
 import logging
 from datetime import datetime, timezone
+from pathlib import Path
 
 import pandas as pd
 
@@ -88,3 +89,25 @@ def flatten_odds(data: list[dict]) -> pd.DataFrame:
 
     logger.info("Flattened %d events into %d rows.", len(data), len(df))
     return df
+
+
+def save_locally(df: pd.DataFrame, output_dir: str = "data/processed") -> Path:
+    """Save the transformed DataFrame as a CSV for local sandbox development.
+
+    Avoids re-hitting the API during local development and testing of the
+    prediction layer. In production, data goes directly to BigQuery instead.
+
+    Args:
+        df: Transformed DataFrame produced by flatten_odds.
+        output_dir: Relative path to the local output directory.
+
+    Returns:
+        The Path of the saved CSV file.
+    """
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    out_path = Path(output_dir) / f"tennis_odds_processed_{timestamp}.csv"
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    df.to_csv(out_path, index=False)
+    logger.info("Saved %d rows to %s", len(df), out_path)
+    return out_path
