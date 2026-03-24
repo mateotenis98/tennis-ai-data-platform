@@ -39,19 +39,49 @@ This platform ingests live ATP tennis odds from The-Odds-API, transforms and sto
 - Comparison logic: model probability vs bookmaker implied probability
 - Local Streamlit UI demo
 
-### 📅 Sprint 4 — Agent Layer & Data Enrichment
-### 📅 Sprint 5 — Backend API (Cloud Functions)
-### 📅 Sprint 6 — Frontend (Lovable → mateogrisales.com)
+### 📅 Sprint 4 — LangGraph Agent Architecture
+### 📅 Sprint 5 — Data Enrichment & Model Upgrade
+### 📅 Sprint 6 — Backend API (Cloud Functions)
+### 📅 Sprint 7 — Frontend (Lovable → mateogrisales.com)
 
 ## Repository Structure
 ```
 src/
   ingestion/      # Data extraction scripts (The-Odds-API → GCS)
   processing/     # ETL: flatten, transform, load to BigQuery
+  agents/         # AI agents (rankings, model, explanation)
+scripts/          # Dev setup and secret management utilities
 notebooks/        # EDA and exploration
 docs/             # Schema docs and agent persona files
 data/raw/         # Local sandbox data (gitignored)
+data/processed/   # Transformed CSVs (gitignored)
 ```
+
+## Local Setup (New Machine)
+
+**Prerequisites:** `gcloud` CLI installed, authenticated, and project set.
+
+```bash
+# 1. Clone the repo
+git clone <repo-url> && cd tennis-ai-data-platform
+
+# 2. Pull all secrets from GCP Secret Manager and recreate .env
+./scripts/setup_env.sh
+
+# 3. Activate virtual environment
+source .venv/bin/activate
+```
+
+> First time pushing secrets from the source machine? Run `./scripts/push_secrets.sh` first.
+
+## Secrets Management
+
+All secrets (API keys, service account JSON) are stored in **GCP Secret Manager** — never in the repo.
+
+| Script | Purpose |
+|---|---|
+| `scripts/push_secrets.sh` | Push local `.env` + service account JSON → GCP Secret Manager |
+| `scripts/setup_env.sh` | Pull secrets from GCP Secret Manager → recreate `.env` on a new machine |
 
 ---
 *Developed by Mateo Grisales*
