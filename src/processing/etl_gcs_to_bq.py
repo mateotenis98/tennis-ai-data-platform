@@ -2,11 +2,11 @@
 
 import json
 import logging
-import os
 
 from dotenv import load_dotenv
 from google.cloud import storage
 
+from src.config import load_config
 from src.processing.transform import flatten_odds
 from src.processing.load_bq import load_to_bigquery
 
@@ -56,13 +56,9 @@ def run_etl() -> None:
         ValueError: If the downloaded JSON is empty or malformed.
         google.cloud.exceptions.GoogleCloudError: On any GCP API failure.
     """
-    bucket_name = os.getenv("GCP_BUCKET_NAME")
-    project_id = os.getenv("GCP_PROJECT_ID")
-
-    if not bucket_name:
-        raise EnvironmentError("GCP_BUCKET_NAME is not set in the environment.")
-    if not project_id:
-        raise EnvironmentError("GCP_PROJECT_ID is not set in the environment.")
+    config = load_config()
+    bucket_name = config["gcp"]["bucket_name"]
+    project_id = config["gcp"]["project_id"]
 
     # --- Extract ---
     logger.info("Connecting to GCS bucket '%s'...", bucket_name)

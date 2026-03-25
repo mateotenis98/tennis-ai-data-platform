@@ -44,19 +44,13 @@ echo "--- Fetching secrets from GCP Secret Manager ---"
 
 THE_ODDS_API_KEY=$(fetch_secret "THE_ODDS_API_KEY")
 GEMINI_API_KEY=$(fetch_secret "GEMINI_API_KEY")
-GCP_BUCKET_NAME=$(fetch_secret "GCP_BUCKET_NAME")
-GCP_PROJECT_ID=$(fetch_secret "GCP_PROJECT_ID")
 
 # --- Write .env ---
 cat > "$ENV_FILE" <<EOF
 # The-Odds-API credentials
 THE_ODDS_API_KEY=${THE_ODDS_API_KEY}
 
-# Google Cloud Storage
-GCP_BUCKET_NAME=${GCP_BUCKET_NAME}
-
-# GCP
-GCP_PROJECT_ID=${GCP_PROJECT_ID}
+# GCP — service account key path (local only)
 GOOGLE_APPLICATION_CREDENTIALS=${SA_KEY_PATH}
 
 # Gemini (Google AI Studio — free tier)

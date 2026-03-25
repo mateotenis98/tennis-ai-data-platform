@@ -6,6 +6,7 @@
 - Language: Python 3.10+.
 - Code Style: PEP 8, strict type hints, and Google-style Docstrings for all functions.
 - Security: Never hardcode API keys or GCP credentials. Use `python-dotenv` and `.env` for local dev. All secrets are stored in **GCP Secret Manager** — use `scripts/push_secrets.sh` to upload and `scripts/setup_env.sh` to restore on a new machine.
+- Config: Non-sensitive config (`GCP_PROJECT_ID`, `GCP_BUCKET_NAME`) lives in `config.yaml` (tracked in git). Load via `src/config.py`. Only true secrets (API keys, service account JSON) go in `.env` and Secret Manager.
 
 ## Repository Structure (Enforce Modularity)
 - Do NOT put business logic in `main.py`. 
@@ -26,7 +27,7 @@ Nested JSON flattened with Pandas, schema confirmed via EDA (see `docs/MIAMI_OPE
 
 **Approach:** Sandbox-first. Build and validate locally, then promote to GCP.
 1. ✓ Update `extract_odds.py` to dynamically discover active ATP sport keys via `/v4/sports/` — no hardcoding
-2. Build ranking agent using **Gemini Flash** to fetch ATP rankings via web search
+2. ✓ Build ranking agent using **Gemini Flash** to fetch ATP rankings via web search
 3. ✓ Add `raw_implied` (1/price) and `true_implied` (vig-removed) columns to `transform.py`
 4. Build ranking-based probability calculator
 5. Build comparison & recommendation logic (model prob vs implied prob)

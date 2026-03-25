@@ -50,12 +50,10 @@ push_secret() {
   fi
 }
 
-# --- Push API keys and config ---
-echo "--- Pushing API keys and config ---"
+# --- Push API keys ---
+echo "--- Pushing API keys ---"
 push_secret "THE_ODDS_API_KEY"  "${THE_ODDS_API_KEY:-}"
 push_secret "GEMINI_API_KEY"    "${GEMINI_API_KEY:-}"
-push_secret "GCP_BUCKET_NAME"   "${GCP_BUCKET_NAME:-}"
-push_secret "GCP_PROJECT_ID"    "${GCP_PROJECT_ID:-}"
 
 # --- Push service account JSON (file content, not path) ---
 echo ""

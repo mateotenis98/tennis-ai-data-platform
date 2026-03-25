@@ -77,11 +77,31 @@ source .venv/bin/activate
 ## Secrets Management
 
 All secrets (API keys, service account JSON) are stored in **GCP Secret Manager** — never in the repo.
+Non-sensitive config (`project_id`, `bucket_name`) lives in `config.yaml`, which is tracked in git.
 
 | Script | Purpose |
 |---|---|
 | `scripts/push_secrets.sh` | Push local `.env` + service account JSON → GCP Secret Manager |
 | `scripts/setup_env.sh` | Pull secrets from GCP Secret Manager → recreate `.env` on a new machine |
+
+### Secrets stored in GCP Secret Manager
+
+| Secret Name | Description |
+|---|---|
+| `THE_ODDS_API_KEY` | The-Odds-API authentication key |
+| `GEMINI_API_KEY` | Google AI Studio API key (Gemini Flash) |
+| `GCP_SERVICE_ACCOUNT_JSON` | Full contents of the service account JSON key file |
+
+> GCP Project: `tennis-data-487809`
+> Console: GCP Console → Secret Manager
+> The service account `tennis-uploader` must have the **Secret Manager Secret Accessor** role to read secrets.
+
+### Config tracked in git
+
+| Key | File | Value |
+|---|---|---|
+| `gcp.project_id` | `config.yaml` | `tennis-data-487809` |
+| `gcp.bucket_name` | `config.yaml` | `raw-tennis-data` |
 
 ---
 *Developed by Mateo Grisales*

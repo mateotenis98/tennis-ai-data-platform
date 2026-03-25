@@ -8,7 +8,7 @@ from google.cloud.exceptions import NotFound
 
 logger = logging.getLogger(__name__)
 
-# BigQuery schema matching the 14-column flattened structure
+# BigQuery schema matching the 16-column flattened structure
 _BQ_SCHEMA = [
     bigquery.SchemaField("event_id", "STRING", mode="NULLABLE"),
     bigquery.SchemaField("sport_key", "STRING", mode="NULLABLE"),
@@ -23,6 +23,8 @@ _BQ_SCHEMA = [
     bigquery.SchemaField("market_last_update", "TIMESTAMP", mode="NULLABLE"),
     bigquery.SchemaField("outcome_name", "STRING", mode="NULLABLE"),
     bigquery.SchemaField("price", "FLOAT64", mode="NULLABLE"),
+    bigquery.SchemaField("raw_implied", "FLOAT64", mode="NULLABLE"),
+    bigquery.SchemaField("true_implied", "FLOAT64", mode="NULLABLE"),
     bigquery.SchemaField("ingested_at", "TIMESTAMP", mode="NULLABLE"),
 ]
 

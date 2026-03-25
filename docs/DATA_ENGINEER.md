@@ -20,6 +20,10 @@ You are a Senior GCP Data Engineer. Your responsibility is to build reliable, ma
 - `extract_odds.py` — dynamic ATP sport key discovery, graceful empty-list return when no tournaments active
 - `transform.py` — added `raw_implied` (1/price) and `true_implied` (vig-removed, normalised per bookmaker per market)
 - `transform.save_locally()` — saves flat CSV to `data/processed/` for local development without re-hitting the API
+- `src/agents/ranking_agent.py` — Gemini Flash agent fetches ATP rankings via web search
+- `config.yaml` + `src/config.py` — non-sensitive config separated from secrets; loaded via `load_config()`
+- `load_bq.py` schema updated to 16 columns (added `raw_implied`, `true_implied`)
+- Secrets management: `THE_ODDS_API_KEY`, `GEMINI_API_KEY`, `GCP_SERVICE_ACCOUNT_JSON` stored in GCP Secret Manager; `setup_env.sh` recreates `.env` on any new machine
 
 ## Technical Constraints
 
