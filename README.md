@@ -39,10 +39,10 @@ This platform ingests live ATP tennis odds from The-Odds-API, transforms and sto
 - Comparison logic: model probability vs bookmaker implied probability
 - Local Streamlit UI demo
 
-### 📅 Sprint 4 — LangGraph Agent Architecture
-### 📅 Sprint 5 — Data Enrichment & Model Upgrade
-### 📅 Sprint 6 — Backend API (Cloud Functions)
-### 📅 Sprint 7 — Frontend (Lovable → mateogrisales.com)
+### 📅 Sprint 4 — Deploy to GCP + mateogrisales.com (go live with ranking-based model)
+### 📅 Sprint 5 — LangGraph Agent Architecture
+### 📅 Sprint 6 — Data Enrichment & Model Upgrade
+### 📅 Sprint 7 — Polish & React UI Upgrade
 
 ## Repository Structure
 ```

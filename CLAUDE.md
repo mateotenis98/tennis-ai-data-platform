@@ -48,9 +48,19 @@ Nested JSON flattened with Pandas, schema confirmed via EDA (see `docs/MIAMI_OPE
 **Key lesson from Sprint 3:** Never hardcode tournament sport keys — use `/v4/sports/` to discover active `tennis_atp_*` keys dynamically.
 **Key lesson from Sprint 3:** Betting advice must compare model prob vs `raw_implied` (1/price), NOT `true_implied`. The vig is already baked into the raw price — that's the real threshold for a value bet.
 
-## Sprint 4 (Planned) — LangGraph Agent Architecture
+## Sprint 4 (Planned) — Deploy to GCP + mateogrisales.com
 
-**Goal:** Refactor the linear Sprint 3 pipeline into a proper coordinator → sub-agent graph.
+**Goal:** Go live as fast as possible with the working ranking-based model. A live public demo is more valuable for the portfolio than a local Streamlit app.
+
+**Planned work:**
+1. Expose prediction pipeline as GCP Cloud Functions / Cloud Run API
+2. Build minimal React UI in Lovable
+3. Connect frontend to backend API
+4. Deploy live at mateogrisales.com
+
+## Sprint 5 (Planned) — LangGraph Agent Architecture
+
+**Goal:** Refactor the linear pipeline into a proper coordinator → sub-agent graph. LangGraph provides the routing and fallback infrastructure needed before adding more data sources in Sprint 6.
 
 **Trigger:** Introduce LangGraph when the pipeline stops being linear — i.e., when the coordinator needs to make routing decisions, not just call functions in order.
 
@@ -59,18 +69,19 @@ Nested JSON flattened with Pandas, schema confirmed via EDA (see `docs/MIAMI_OPE
 2. Refactor sub-agents (odds, rankings, model, explanation) into LangGraph nodes
 3. Add retry/fallback logic (e.g., ranking fetch fails → use cached data)
 4. Conditional routing based on data availability or confidence thresholds
-5. Begin wiring toward GCP Cloud Functions (stateful graph becomes valuable here)
 
-**Key decision:** Do NOT introduce LangGraph in Sprint 3. The MVP pipeline is linear — plain Python orchestration is sufficient and simpler to debug.
+**Key decision:** Do NOT introduce LangGraph in Sprint 3 or 4. Go live first, refactor second.
 
-## Sprint 5+ (Planned) — Production on GCP
+## Sprint 6+ (Planned) — Data Enrichment & Model Upgrade
 
-**Goal:** Deploy the LangGraph coordinator as a Cloud Function or Cloud Run service.
+**Goal:** Improve prediction quality with richer data sources. Improvements go live immediately since the app is already deployed.
 
 **Planned work:**
-1. Deploy backend to GCP Cloud Functions / Cloud Run
-2. Connect Lovable (React) frontend at mateogrisales.com to backend API
-3. Leverage LangGraph checkpointing for async/long-running prediction requests
+1. Add historical H2H data (Sackmann dataset → BigQuery)
+2. Add surface/conditions features
+3. Add news/sentiment agent
+4. Upgrade ranking model to logistic regression
+5. Add `docs/ML_ENGINEER.md` agent persona
 
 ## Multi-Agent Routing
 When working on ETL, data cleaning, or BigQuery tasks, ALWAYS read `docs/DATA_ENGINEER.md` first to adopt the Data Engineer persona and constraints.
