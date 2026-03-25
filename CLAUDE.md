@@ -30,7 +30,7 @@ Nested JSON flattened with Pandas, schema confirmed via EDA (see `docs/MIAMI_OPE
 2. ✓ Build ranking agent using **Gemini Flash** to fetch ATP rankings via web search
 3. ✓ Add `raw_implied` (1/price) and `true_implied` (vig-removed) columns to `transform.py`
 4. Build ranking-based probability calculator
-5. Build comparison & recommendation logic (model prob vs implied prob)
+5. ✓ Build comparison & recommendation logic (model prob vs raw implied prob)
 6. Wire into local Streamlit UI for demo
 
 **Key architectural decisions:**
@@ -46,6 +46,7 @@ Nested JSON flattened with Pandas, schema confirmed via EDA (see `docs/MIAMI_OPE
 
 **Key lesson from Sprint 1:** Using `_SPORT = "upcoming"` returns all sports, not just tennis.
 **Key lesson from Sprint 3:** Never hardcode tournament sport keys — use `/v4/sports/` to discover active `tennis_atp_*` keys dynamically.
+**Key lesson from Sprint 3:** Betting advice must compare model prob vs `raw_implied` (1/price), NOT `true_implied`. The vig is already baked into the raw price — that's the real threshold for a value bet.
 
 ## Sprint 4 (Planned) — LangGraph Agent Architecture
 
