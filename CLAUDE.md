@@ -19,45 +19,33 @@ Local execution and GCP Cloud Storage upload are 100% done. The pipeline success
 ## Sprint 2 (ETL & BigQuery) — COMPLETE ✓
 Nested JSON flattened with Pandas, schema confirmed via EDA (see `docs/MIAMI_OPEN_SCHEMA.md`), data loaded into BigQuery. One row per match per bookmaker.
 
-## CURRENT FOCUS: Sprint 3 — End-to-End Prediction MVP
+## Sprint 3 (End-to-End Prediction MVP) — COMPLETE ✓
 
-**Goal:** A fully working prediction pipeline (simple model, full stack) before adding complexity.
+**Deliverable:** Local Streamlit demo (`app.py`) — fetches live ATP pre-match odds, retrieves rankings via Gemini Flash, computes ranking-based win probabilities, compares vs bookmaker raw implied, surfaces value bet / marginal / no bet signals.
 
-**Sport key:** `tennis_atp` (general upcoming ATP matches) | **Market:** `h2h` | **Region:** `us`
-
-**Approach:** Sandbox-first. Build and validate locally, then promote to GCP.
-1. ✓ Update `extract_odds.py` to dynamically discover active ATP sport keys via `/v4/sports/` — no hardcoding
-2. ✓ Build ranking agent using **Gemini Flash** to fetch ATP rankings via web search
-3. ✓ Add `raw_implied` (1/price) and `true_implied` (vig-removed) columns to `transform.py`
-4. Build ranking-based probability calculator
-5. ✓ Build comparison & recommendation logic (model prob vs raw implied prob)
-6. Wire into local Streamlit UI for demo
-
-**Key architectural decisions:**
-- **LLM:** Google Gemini Flash (free tier, GCP-native) — NOT Claude API (separate billing)
-- **Frontend (future):** Lovable (React) deployed to mateogrisales.com
-- **Backend (future):** GCP Cloud Functions
-- **Prediction:** Real-time per user request (no pre-computation for now)
-- **Agent pattern:** Coordinator agent → sub-agents (odds, rankings, model, explanation)
+**Key decisions made:**
+- Ranking agent accepts exact player names from the odds API — Gemini returns those exact names back, no fuzzy matching needed
+- `filter_upcoming()` in `transform.py` strips in-play matches before any prediction — live odds reflect score state, not pre-match probability
+- Results cached in `st.session_state` — re-renders don't re-hit the APIs; user clicks "Run" explicitly
 
 **Local data flow:**
 - `data/raw/tennis_odds_<timestamp>.json` — raw API response (mirrors GCS)
 - `data/processed/tennis_odds_processed_<timestamp>.csv` — flat transformed data (mirrors BigQuery)
 
-**Key lesson from Sprint 1:** Using `_SPORT = "upcoming"` returns all sports, not just tennis.
-**Key lesson from Sprint 3:** Never hardcode tournament sport keys — use `/v4/sports/` to discover active `tennis_atp_*` keys dynamically.
-**Key lesson from Sprint 3:** Betting advice must compare model prob vs `raw_implied` (1/price), NOT `true_implied`. The vig is already baked into the raw price — that's the real threshold for a value bet.
-**Key lesson from Sprint 3:** The Odds API returns ALL matches including in-play (live) ones. Live odds shift dramatically with the score (e.g., a player up 5-1 in the third set gets priced at 95% — reflecting current match state, not pre-match probability). Comparing a static ranking-based model against live odds is meaningless and misleading. Always filter out matches where `commence_time` is in the past before running predictions. Only pre-match odds are valid inputs to the model.
-
-## Sprint 4 (Planned) — Deploy to GCP + mateogrisales.com
+## CURRENT FOCUS: Sprint 4 — Deploy to GCP + mateogrisales.com
 
 **Goal:** Go live as fast as possible with the working ranking-based model. A live public demo is more valuable for the portfolio than a local Streamlit app.
 
 **Planned work:**
-1. Expose prediction pipeline as GCP Cloud Functions / Cloud Run API
+1. Expose prediction pipeline as GCP Cloud Run API (Cloud Functions if pipeline fits within timeout, otherwise Cloud Run)
 2. Build minimal React UI in Lovable
 3. Connect frontend to backend API
 4. Deploy live at mateogrisales.com
+
+**Key lesson from Sprint 1:** Using `_SPORT = "upcoming"` returns all sports, not just tennis.
+**Key lesson from Sprint 3:** Never hardcode tournament sport keys — use `/v4/sports/` to discover active `tennis_atp_*` keys dynamically.
+**Key lesson from Sprint 3:** Betting advice must compare model prob vs `raw_implied` (1/price), NOT `true_implied`. The vig is already baked into the raw price — that's the real threshold for a value bet.
+**Key lesson from Sprint 3:** The Odds API returns ALL matches including in-play (live) ones. Live odds shift dramatically with the score (e.g., a player up 5-1 in the third set gets priced at 95% — reflecting current match state, not pre-match probability). Comparing a static ranking-based model against live odds is meaningless and misleading. Always filter out matches where `commence_time` is in the past before running predictions. Only pre-match odds are valid inputs to the model.
 
 ## Sprint 5 (Planned) — LangGraph Agent Architecture
 
