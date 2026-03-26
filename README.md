@@ -32,14 +32,15 @@ This platform ingests live ATP tennis odds from The-Odds-API, transforms and sto
 - Data loaded into BigQuery (`etl_gcs_to_bq.py`)
 - Schema documented in `docs/MIAMI_OPEN_SCHEMA.md`
 
-### 🔄 Sprint 3 — End-to-End Prediction MVP (Current)
-- General ATP upcoming matches endpoint
-- Gemini Flash agent fetches ATP rankings
-- Implied probability converter + ranking-based predictor
-- Comparison logic: model probability vs bookmaker implied probability
-- Local Streamlit UI demo
+### ✅ Sprint 3 — End-to-End Prediction MVP
+- Dynamic ATP sport key discovery via `/v4/sports/` — no hardcoded tournament names
+- Ranking agent (Gemini Flash + Google Search) fetches rankings for exact player names from the odds API
+- `filter_upcoming()` strips in-play matches — live odds reflect score state, not pre-match probability
+- Ranking-based probability model: `P(A) = points_A / (points_A + points_B)`
+- Comparison logic: model prob vs bookmaker `raw_implied` (1/price) to surface value bets
+- Local Streamlit demo (`app.py`) — full pipeline behind a single button, results cached in session state
 
-### 📅 Sprint 4 — Deploy to GCP + mateogrisales.com (go live with ranking-based model)
+### 🔄 Sprint 4 — Deploy to GCP + mateogrisales.com (Current)
 ### 📅 Sprint 5 — LangGraph Agent Architecture
 ### 📅 Sprint 6 — Data Enrichment & Model Upgrade
 ### 📅 Sprint 7 — Polish & React UI Upgrade
