@@ -9,6 +9,38 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
+def filter_upcoming(df: pd.DataFrame) -> pd.DataFrame:
+    """Remove in-play matches, keeping only matches that have not yet started.
+
+    The Odds API returns ALL matches including those currently in progress.
+    Live odds shift dramatically with the score (e.g. a player up two sets
+    gets priced at 95%), so they reflect the current match state rather than
+    pre-match probability. Comparing a static ranking-based model against live
+    odds is meaningless. This filter ensures only pre-match odds reach the
+    prediction layer.
+
+    Args:
+        df: Transformed DataFrame produced by flatten_odds, which must contain
+            a UTC-aware ``commence_time`` column.
+
+    Returns:
+        A filtered DataFrame containing only rows where ``commence_time`` is
+        strictly in the future relative to the current UTC time. Logs how
+        many matches were dropped.
+    """
+    now = datetime.now(timezone.utc)
+    upcoming = df[df["commence_time"] > now]
+
+    dropped = df["event_id"].nunique() - upcoming["event_id"].nunique()
+    if dropped > 0:
+        logger.info(
+            "Filtered out %d in-play or completed match(es) — only pre-match odds are valid model inputs.",
+            dropped,
+        )
+
+    return upcoming
+
+
 def flatten_odds(data: list[dict]) -> pd.DataFrame:
     """Flatten a list of nested odds event dicts into a 14-column DataFrame.
 
