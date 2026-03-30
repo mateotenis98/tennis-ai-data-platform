@@ -33,8 +33,8 @@
 **AC-Rule:** Only pre-match matches returned — `filter_upcoming()` must be applied. Secrets loaded from GCP Secret Manager, not env vars.
 **AC-How-critical:** FastAPI app must return structured JSON (not HTML). Dockerfile must not copy `.env` into the image. Cloud Run service must require authentication (not public by default).
 
-- [ ] Wrap pipeline logic into a FastAPI app (`api/main.py`) with a `POST /predict` endpoint
-- [ ] Write `Dockerfile` and validate image builds and runs locally
+- [x] Wrap pipeline logic into a FastAPI app (`api/main.py`) with a `POST /predict` endpoint
+- [x] Write `Dockerfile` and validate image builds and runs locally
 - [ ] Push image to GCP Artifact Registry
 - [ ] Configure Cloud Run service (env vars wired to Secret Manager, IAM, region)
 - [ ] Smoke test deployed endpoint end-to-end
