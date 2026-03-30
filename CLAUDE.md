@@ -36,11 +36,14 @@ Nested JSON flattened with Pandas, schema confirmed via EDA (see `docs/MIAMI_OPE
 
 **Goal:** Go live as fast as possible with the working ranking-based model. A live public demo is more valuable for the portfolio than a local Streamlit app.
 
-**Planned work:**
-1. Expose prediction pipeline as GCP Cloud Run API (Cloud Run chosen over Cloud Functions — Gemini Flash latency + future LangGraph refactor make Cloud Run the right fit)
-2. Build minimal React UI in Lovable
-3. Connect frontend to backend API
-4. Deploy live at mateogrisales.com
+**Progress (Story 1 — 2/5 tasks done):**
+- ✅ `api/main.py` — FastAPI app with `POST /predict`, `GET /health`, X-API-Key auth, Pydantic models, CORS via env var
+- ✅ `Dockerfile` + `.dockerignore` — image builds and smoke-tested locally with real secrets
+- ⬜ Push image to GCP Artifact Registry
+- ⬜ Configure Cloud Run service (Secret Manager, IAM, region)
+- ⬜ Smoke test deployed endpoint
+
+**Next session starts at:** Push image to Artifact Registry (`gcloud` is installed and authenticated as `mateo@grisalogic.com`, project `tennis-data-487809`).
 
 **Key lesson from Sprint 1:** Using `_SPORT = "upcoming"` returns all sports, not just tennis.
 **Key lesson from Sprint 3:** Never hardcode tournament sport keys — use `/v4/sports/` to discover active `tennis_atp_*` keys dynamically.
