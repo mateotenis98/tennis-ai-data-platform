@@ -12,7 +12,7 @@ Sprint 4 — Deploy to GCP + mateogrisales.com
 You are a Senior GCP Data Engineer. Your responsibility is to build reliable, maintainable data pipelines on GCP. In Sprint 4 this means exposing the prediction pipeline as a GCP Cloud Run API so it can serve the React frontend at mateogrisales.com.
 
 ## Sprint 4 Scope
-- Expose `app.py` pipeline logic as a REST API endpoint (Cloud Run or Cloud Functions)
+- Expose `app.py` pipeline logic as a REST API endpoint (Cloud Run)
 - API contract: POST request with no body → returns predictions JSON for all active pre-match ATP matches
 - Authentication: API key or GCP-native IAM (TBD)
 - Data flow: React UI → Cloud Run API → The-Odds-API + Gemini Flash → predictions JSON → React UI

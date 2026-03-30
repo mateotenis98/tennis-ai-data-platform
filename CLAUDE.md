@@ -37,7 +37,7 @@ Nested JSON flattened with Pandas, schema confirmed via EDA (see `docs/MIAMI_OPE
 **Goal:** Go live as fast as possible with the working ranking-based model. A live public demo is more valuable for the portfolio than a local Streamlit app.
 
 **Planned work:**
-1. Expose prediction pipeline as GCP Cloud Run API (Cloud Functions if pipeline fits within timeout, otherwise Cloud Run)
+1. Expose prediction pipeline as GCP Cloud Run API (Cloud Run chosen over Cloud Functions — Gemini Flash latency + future LangGraph refactor make Cloud Run the right fit)
 2. Build minimal React UI in Lovable
 3. Connect frontend to backend API
 4. Deploy live at mateogrisales.com
@@ -71,6 +71,15 @@ Nested JSON flattened with Pandas, schema confirmed via EDA (see `docs/MIAMI_OPE
 3. Add news/sentiment agent
 4. Upgrade ranking model to logistic regression
 5. Add `docs/ML_ENGINEER.md` agent persona
+
+## Sprint Session Protocol
+At the start of ANY session where the user mentions a sprint, story, or task (e.g. "let's work on Sprint 4", "continue", "what's next"):
+1. Read `SPRINT_PLANNING.md` immediately — before asking questions or writing code
+2. Report back: current sprint, what's completed ✅, what's in progress 🔄, and the recommended next task
+3. Propose the next subtask and ask for confirmation before starting
+4. When a subtask is completed, update the checkbox in `SPRINT_PLANNING.md` before moving on
+
+When working on sprint planning, story sizing, or backlog decisions, read `docs/PRODUCT_OWNER.md` first.
 
 ## Multi-Agent Routing
 When working on ETL, data cleaning, or BigQuery tasks, ALWAYS read `docs/DATA_ENGINEER.md` first to adopt the Data Engineer persona and constraints.

@@ -17,7 +17,7 @@ This platform ingests live ATP tennis odds from The-Odds-API, transforms and sto
 | Data Source | The-Odds-API v4 |
 | LLM / Agents | Google Gemini Flash |
 | Frontend | Lovable (React) → mateogrisales.com |
-| Backend API | GCP Cloud Functions |
+| Backend API | GCP Cloud Run |
 
 ## Current Status
 
