@@ -50,9 +50,12 @@
 **AC-Rule:** UI must handle the case where no pre-match matches are available (show a friendly empty state, not a crash).
 **AC-How-critical:** API call must include the API key in the request header — do not expose it in client-side JS as a plain string; use an environment variable in Lovable.
 
-- [ ] Design minimal UI layout: match cards, value signal badge, odds table
-- [ ] Scaffold React app in Lovable
-- [ ] Wire `POST /predict` API call with loading and error states
+- [x] Design minimal UI layout: match cards, value signal badge, odds table
+- [x] Scaffold React app in Lovable — clay orange (#E8650A), Roland Garros inspired, tennis ball spinner
+- [x] Wire `POST /predict` API call with loading and error states
+- [x] Fix CORS preflight — add `OPTIONS /predict` to `api-gateway.yaml`, deploy `tennis-api-config-v3`
+- [x] Fix ranking agent — remove Google Search grounding (gemini-2.5-flash SDK incompatibility), model training data sufficient
+- [x] Confirm end-to-end working in Lovable preview — Monte Carlo Masters predictions loading
 
 ### Story 3 — Integration & Go Live
 **AC-What:** Visiting `tennis.mateogrisales.com` loads the React app and successfully fetches and displays live predictions.
