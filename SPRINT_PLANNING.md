@@ -94,3 +94,4 @@
 - Pre-compute nightly predictions and cache in BigQuery
 - Model performance tracking and retraining pipeline
 - Vertex AI integration for model hosting
+- **Cost kill switch:** Budget alert → Pub/Sub topic → Cloud Function → set Cloud Run `max-instances=0` automatically when spend threshold is crossed. Currently not worth the complexity — `X-API-Key` auth + 3 instance cap + email alerts are sufficient for portfolio traffic.

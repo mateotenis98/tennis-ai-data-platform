@@ -97,3 +97,21 @@ gcloud run services update tennis-api --region=us-central1 --max-instances=3
 A scheduled Claude Code agent will run weekly to check current spend vs budget,
 Cloud Run request counts, error rates, and active instances — flagging anomalies
 with specific `gcloud` remediation commands.
+
+---
+
+## Future: Automated Cost Kill Switch
+
+**Pattern:** Budget alert → Pub/Sub topic → Cloud Function → `gcloud run services update tennis-api --max-instances=0`
+
+When a spend threshold is crossed, the Cloud Function automatically sets Cloud Run max instances to 0 — killing all traffic until manually re-enabled.
+
+**Why not implemented yet:**
+- Budget data has up to 1 hour lag — not instant protection
+- Kills legitimate users too — requires manual re-enable after investigation
+- Current protections are sufficient for portfolio traffic:
+  - `X-API-Key` auth blocks unauthenticated requests
+  - 3 max instances caps blast radius
+  - Email alerts reach billing admin fast enough to act manually
+
+**When to implement:** When the app has real users and real revenue at risk.
