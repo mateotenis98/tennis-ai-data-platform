@@ -34,7 +34,6 @@ This platform ingests live ATP tennis odds from The-Odds-API, transforms and sto
 
 ### ✅ Sprint 3 — End-to-End Prediction MVP
 - Dynamic ATP sport key discovery via `/v4/sports/` — no hardcoded tournament names
-- Ranking agent (Gemini Flash + Google Search) fetches rankings for exact player names from the odds API
 - `filter_upcoming()` strips in-play matches — live odds reflect score state, not pre-match probability
 - Ranking-based probability model: `P(A) = points_A / (points_A + points_B)`
 - Comparison logic: model prob vs bookmaker `raw_implied` (1/price) to surface value bets
@@ -46,8 +45,11 @@ This platform ingests live ATP tennis odds from The-Odds-API, transforms and sto
 - Cloud Run deployed privately in `us-central1` — never exposed directly to the internet
 - GCP API Gateway (`tennis-gateway`) as public-facing layer — enterprise pattern for private Cloud Run
 - `api-gateway-invoker` service account handles gateway → Cloud Run authentication
-- **Public URL:** `https://tennis-gateway-agmlnd9p.uc.gateway.dev`
-- React UI and mateogrisales.com deployment in progress
+- Live ATP rankings scraped from `atptour.com` on every request — always current, no model staleness
+- React UI (Lovable) scaffolded and confirmed working against live API
+- GCP budget alert, Cloud Run max instances cap, and `docs/COST_CONTROLS.md` in place
+- **Public API URL:** `https://tennis-gateway-agmlnd9p.uc.gateway.dev`
+- Remaining: point `tennis.mateogrisales.com` to Lovable, lock down CORS, move secrets to Secret Manager
 ### 📅 Sprint 5 — LangGraph Agent Architecture
 ### 📅 Sprint 6 — Data Enrichment & Model Upgrade
 ### 📅 Sprint 7 — Polish & React UI Upgrade
