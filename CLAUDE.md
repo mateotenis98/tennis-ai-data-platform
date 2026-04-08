@@ -36,19 +36,27 @@ Nested JSON flattened with Pandas, schema confirmed via EDA (see `docs/MIAMI_OPE
 
 **Goal:** Go live as fast as possible with the working ranking-based model. A live public demo is more valuable for the portfolio than a local Streamlit app.
 
-**Progress (Story 1 — 2/5 tasks done):**
-- ✅ `api/main.py` — FastAPI app with `POST /predict`, `GET /health`, X-API-Key auth, Pydantic models, CORS via env var
-- ✅ `Dockerfile` + `.dockerignore` — image builds and smoke-tested locally with real secrets
-- ⬜ Push image to GCP Artifact Registry
-- ⬜ Configure Cloud Run service (Secret Manager, IAM, region)
-- ⬜ Smoke test deployed endpoint
+**Story 1 — COMPLETE ✓**
+- `api/main.py`: FastAPI app, `POST /predict` + `GET /health`, `X-API-Key` auth, Pydantic response models, CORS configurable via env var
+- `Dockerfile`: `python:3.12-slim`, built and pushed to Artifact Registry via **Cloud Build** (no local Docker needed)
+- Cloud Run deployed **privately** (`--no-allow-unauthenticated`) in `us-central1` — never exposed directly to the internet
+- **API Gateway** (`tennis-gateway`) deployed as the public-facing layer using `api-gateway.yaml` (OpenAPI spec)
+- `api-gateway-invoker` service account holds `roles/run.invoker` on Cloud Run; gateway authenticates automatically
+- `X-API-Key` auth validated by FastAPI — gateway passes it through, does not validate at gateway layer
+- **Public gateway URL:** `https://tennis-gateway-agmlnd9p.uc.gateway.dev`
+- **Cloud Run URL (private):** `https://tennis-api-er2jgzyldq-uc.a.run.app`
 
-**Next session starts at:** Push image to Artifact Registry (`gcloud` is installed and authenticated as `mateo@grisalogic.com`, project `tennis-data-487809`).
+**Remaining work (Stories 2–4):**
+1. Build React UI in Lovable — call gateway URL with `X-API-Key` header
+2. Configure CORS on Cloud Run to allow frontend origin only (not `*`)
+3. Deploy live at mateogrisales.com
+4. Move secrets from plain Cloud Run env vars → GCP Secret Manager (Story 4 hardening)
 
 **Key lesson from Sprint 1:** Using `_SPORT = "upcoming"` returns all sports, not just tennis.
 **Key lesson from Sprint 3:** Never hardcode tournament sport keys — use `/v4/sports/` to discover active `tennis_atp_*` keys dynamically.
 **Key lesson from Sprint 3:** Betting advice must compare model prob vs `raw_implied` (1/price), NOT `true_implied`. The vig is already baked into the raw price — that's the real threshold for a value bet.
 **Key lesson from Sprint 3:** The Odds API returns ALL matches including in-play (live) ones. Live odds shift dramatically with the score (e.g., a player up 5-1 in the third set gets priced at 95% — reflecting current match state, not pre-match probability). Comparing a static ranking-based model against live odds is meaningless and misleading. Always filter out matches where `commence_time` is in the past before running predictions. Only pre-match odds are valid inputs to the model.
+**Key lesson from Sprint 4:** The `grisalogic.com` GCP org enforces `iam.allowedPolicyMemberDomains` — this blocks `allUsers` IAM bindings on Cloud Run. Disabling it globally is bad practice. The senior pattern is to keep Cloud Run private and front it with **API Gateway** using a dedicated `api-gateway-invoker` service account. Never attempt to grant `allUsers` run.invoker — use the gateway pattern instead.
 
 ## Sprint 5 (Planned) — LangGraph Agent Architecture
 

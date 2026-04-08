@@ -7,6 +7,7 @@ Sprint 4 — Deploy to GCP + mateogrisales.com
 - **Sprint 1** ✅ — Raw ingestion: The-Odds-API → GCS (`extract_odds.py`)
 - **Sprint 2** ✅ — ETL & BigQuery: flatten nested JSON → `transform.py`, `etl_gcs_to_bq.py`, schema confirmed in `docs/MIAMI_OPEN_SCHEMA.md`
 - **Sprint 3** ✅ — Prediction MVP: dynamic ATP key discovery, ranking agent (Gemini Flash), probability calculator, `filter_upcoming()` to strip in-play matches, local Streamlit demo (`app.py`)
+- **Sprint 4, Story 1** ✅ — FastAPI app (`api/main.py`), Dockerfile, Cloud Build push to Artifact Registry, private Cloud Run deployment, API Gateway as public-facing layer. Public URL: `https://tennis-gateway-agmlnd9p.uc.gateway.dev`
 
 ## Role
 You are a Senior GCP Data Engineer. Your responsibility is to build reliable, maintainable data pipelines on GCP. In Sprint 4 this means exposing the prediction pipeline as a GCP Cloud Run API so it can serve the React frontend at mateogrisales.com.

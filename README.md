@@ -17,7 +17,7 @@ This platform ingests live ATP tennis odds from The-Odds-API, transforms and sto
 | Data Source | The-Odds-API v4 |
 | LLM / Agents | Google Gemini Flash |
 | Frontend | Lovable (React) → mateogrisales.com |
-| Backend API | GCP Cloud Run |
+| Backend API | GCP Cloud Run (private) + API Gateway (public) |
 
 ## Current Status
 
@@ -40,7 +40,14 @@ This platform ingests live ATP tennis odds from The-Odds-API, transforms and sto
 - Comparison logic: model prob vs bookmaker `raw_implied` (1/price) to surface value bets
 - Local Streamlit demo (`app.py`) — full pipeline behind a single button, results cached in session state
 
-### 🔄 Sprint 4 — Deploy to GCP + mateogrisales.com (Current)
+### 🔄 Sprint 4 — Deploy to GCP + mateogrisales.com (In Progress)
+- FastAPI prediction API (`api/main.py`) — `POST /predict`, `GET /health`, `X-API-Key` auth
+- Docker image built via Cloud Build and pushed to GCP Artifact Registry
+- Cloud Run deployed privately in `us-central1` — never exposed directly to the internet
+- GCP API Gateway (`tennis-gateway`) as public-facing layer — enterprise pattern for private Cloud Run
+- `api-gateway-invoker` service account handles gateway → Cloud Run authentication
+- **Public URL:** `https://tennis-gateway-agmlnd9p.uc.gateway.dev`
+- React UI and mateogrisales.com deployment in progress
 ### 📅 Sprint 5 — LangGraph Agent Architecture
 ### 📅 Sprint 6 — Data Enrichment & Model Upgrade
 ### 📅 Sprint 7 — Polish & React UI Upgrade
