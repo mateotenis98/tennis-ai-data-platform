@@ -56,6 +56,7 @@
 - [x] Fix CORS preflight — add `OPTIONS /predict` to `api-gateway.yaml`, deploy `tennis-api-config-v3`
 - [x] Fix ranking agent — remove Google Search grounding (gemini-2.5-flash SDK incompatibility), model training data sufficient
 - [x] Confirm end-to-end working in Lovable preview — Monte Carlo Masters predictions loading
+- [x] Fix stale rankings — replace Gemini agent with live `atptour.com` scraper (Alcaraz now correctly #1)
 
 ### Story 3 — Integration & Go Live
 **AC-What:** Visiting `tennis.mateogrisales.com` loads the React app and successfully fetches and displays live predictions.
