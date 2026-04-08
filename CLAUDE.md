@@ -46,17 +46,24 @@ Nested JSON flattened with Pandas, schema confirmed via EDA (see `docs/MIAMI_OPE
 - **Public gateway URL:** `https://tennis-gateway-agmlnd9p.uc.gateway.dev`
 - **Cloud Run URL (private):** `https://tennis-api-er2jgzyldq-uc.a.run.app`
 
-**Remaining work (Stories 2–4):**
+**Remaining work (Stories 2–5):**
 1. Build React UI in Lovable — call gateway URL with `X-API-Key` header
 2. Configure CORS on Cloud Run to allow frontend origin only (not `*`)
 3. Deploy live at mateogrisales.com
 4. Move secrets from plain Cloud Run env vars → GCP Secret Manager (Story 4 hardening)
+5. Weekly Claude Code cost review agent (Story 5)
+
+**Story 4 cost controls — DONE ✓**
+- GCP budget alert scoped to `tennis-data-487809`, email notifications wired to `mateo@grisalogic.com` via Cloud Monitoring channel `14755856984491073698`
+- Cloud Run `tennis-api` capped at 3 max instances — hard ceiling against traffic attacks
+- `docs/COST_CONTROLS.md` documents all controls and restore commands
 
 **Key lesson from Sprint 1:** Using `_SPORT = "upcoming"` returns all sports, not just tennis.
 **Key lesson from Sprint 3:** Never hardcode tournament sport keys — use `/v4/sports/` to discover active `tennis_atp_*` keys dynamically.
 **Key lesson from Sprint 3:** Betting advice must compare model prob vs `raw_implied` (1/price), NOT `true_implied`. The vig is already baked into the raw price — that's the real threshold for a value bet.
 **Key lesson from Sprint 3:** The Odds API returns ALL matches including in-play (live) ones. Live odds shift dramatically with the score (e.g., a player up 5-1 in the third set gets priced at 95% — reflecting current match state, not pre-match probability). Comparing a static ranking-based model against live odds is meaningless and misleading. Always filter out matches where `commence_time` is in the past before running predictions. Only pre-match odds are valid inputs to the model.
 **Key lesson from Sprint 4:** The `grisalogic.com` GCP org enforces `iam.allowedPolicyMemberDomains` — this blocks `allUsers` IAM bindings on Cloud Run. Disabling it globally is bad practice. The senior pattern is to keep Cloud Run private and front it with **API Gateway** using a dedicated `api-gateway-invoker` service account. Never attempt to grant `allUsers` run.invoker — use the gateway pattern instead.
+**Key lesson from Sprint 4:** GCP budget alerts are useless if `notificationsRule` is empty — they fire internally but no human is notified. Always attach a Cloud Monitoring notification channel. Also always set `--max-instances` on Cloud Run — the default is unbounded, which is a cost risk under traffic attacks.
 
 ## Sprint 5 (Planned) — LangGraph Agent Architecture
 

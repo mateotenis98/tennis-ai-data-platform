@@ -65,13 +65,25 @@
 - [ ] End-to-end smoke test on production URL
 
 ### Story 4 — Hardening (Definition of Done)
-**AC-What:** The deployed app is observable — errors in the prediction pipeline appear in Cloud Logging and the README documents the live URL and how to redeploy.
-**AC-Rule:** No secrets in plain env vars anywhere in the deployed stack.
-**AC-How-critical:** Cloud Logging must capture unhandled exceptions from the FastAPI app, not just HTTP access logs.
+**AC-What:** The deployed app is observable — errors in the prediction pipeline appear in Cloud Logging, cost overruns trigger email alerts before they grow, and the README documents the live URL and how to redeploy.
+**AC-Rule:** No secrets in plain env vars anywhere in the deployed stack. No unbounded Cloud Run scaling. Budget alerts must actually reach a human via email.
+**AC-How-critical:** Cloud Logging must capture unhandled exceptions from the FastAPI app, not just HTTP access logs. Budget `notificationsRule` must not be empty.
 
 - [ ] Move `TENNIS_API_KEY` and `THE_ODDS_API_KEY` and `GEMINI_API_KEY` from plain Cloud Run env vars to GCP Secret Manager — wire via Cloud Run secret references
 - [ ] Verify Cloud Logging captures errors from the prediction pipeline
 - [ ] Update `README.md` with live URL and deployment instructions
+- [x] Fix GCP budget alert: scope to `tennis-data-487809` only + attach email notification channel so alerts actually fire
+- [x] Cap Cloud Run max instances to 3 — hard ceiling against traffic attacks
+- [x] Add `docs/COST_CONTROLS.md` documenting all cost protection measures
+
+### Story 5 — Weekly Cost Review Agent
+**AC-What:** A scheduled Claude Code agent runs weekly, checks current GCP spend and Cloud Run metrics, and flags anomalies with suggested fixes.
+**AC-Rule:** Agent must use `gcloud` to pull live data — not rely on memory or cached state.
+**AC-How-critical:** Agent output must be actionable — not just "costs are high" but specific resources and commands to fix.
+
+- [ ] Configure scheduled Claude Code agent (weekly cadence)
+- [ ] Agent checks: current spend vs budget, Cloud Run request counts, error rates, active instances
+- [ ] Agent reports anomalies and suggests specific `gcloud` remediation commands
 
 ---
 
