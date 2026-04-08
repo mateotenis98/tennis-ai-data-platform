@@ -62,14 +62,17 @@ def fetch_atp_rankings(player_names: list[str]) -> dict[str, dict]:
     prompt = _PROMPT_TEMPLATE.format(player_list=player_list)
     logger.info("Querying Gemini Flash for rankings of: %s", player_names)
 
+    # Google Search grounding returns 0 parts with gemini-2.5-flash (known SDK issue).
+    # Model training data is sufficient for ATP rankings — they update weekly but
+    # don't shift dramatically between sessions.
     response = client.models.generate_content(
         model=_MODEL,
         contents=prompt,
-        config=types.GenerateContentConfig(
-            tools=[types.Tool(google_search=types.GoogleSearch())],
-        ),
     )
-    raw_text = response.text.strip()
+    raw_text = response.text
+    if not raw_text:
+        raise ValueError("Gemini returned an empty response.")
+    raw_text = raw_text.strip()
     logger.debug("Gemini raw response:\n%s", raw_text)
 
     rankings = _parse_rankings(raw_text, player_names)

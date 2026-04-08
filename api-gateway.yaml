@@ -23,6 +23,18 @@ paths:
       x-google-backend-credentials:
         service_account: api-gateway-invoker@tennis-data-487809.iam.gserviceaccount.com
   /predict:
+    options:
+      summary: CORS preflight for /predict
+      operationId: predictOptions
+      responses:
+        "204":
+          description: CORS preflight response
+      x-google-backend:
+        address: https://tennis-api-er2jgzyldq-uc.a.run.app/predict
+        jwt_audience: https://tennis-api-er2jgzyldq-uc.a.run.app
+        protocol: h2
+      x-google-backend-credentials:
+        service_account: api-gateway-invoker@tennis-data-487809.iam.gserviceaccount.com
     post:
       summary: Run ATP pre-match prediction pipeline
       operationId: predict
