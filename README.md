@@ -46,10 +46,14 @@ This platform ingests live ATP tennis odds from The-Odds-API, transforms and sto
 - GCP API Gateway (`tennis-gateway`) as public-facing layer — enterprise pattern for private Cloud Run
 - `api-gateway-invoker` service account handles gateway → Cloud Run authentication
 - Live ATP rankings scraped from `atptour.com` on every request — always current, no model staleness
-- React UI (Lovable) scaffolded and confirmed working against live API
+- React UI published at `https://orange-court-ai.lovable.app` — confirmed working end-to-end
+- All secrets (`TENNIS_API_KEY`, `THE_ODDS_API_KEY`, `GEMINI_API_KEY`) moved to GCP Secret Manager — no plain env vars on Cloud Run
+- `TENNIS_API_KEY` rotated from `local-test-key` to a strong 64-char hex key
+- `docs/SECURITY.md` added — documents API key browser exposure caveat, server-side controls, and rotation steps
 - GCP budget alert, Cloud Run max instances cap, and `docs/COST_CONTROLS.md` in place
 - **Public API URL:** `https://tennis-gateway-agmlnd9p.uc.gateway.dev`
-- Remaining: point `tennis.mateogrisales.com` to Lovable, lock down CORS, move secrets to Secret Manager
+- **Frontend (staging):** `https://orange-court-ai.lovable.app`
+- Remaining: push Lovable code to GitHub → deploy via Netlify → point `tennis.mateogrisales.com`, lock CORS to production domain
 ### 📅 Sprint 5 — LangGraph Agent Architecture
 ### 📅 Sprint 6 — Data Enrichment & Model Upgrade
 ### 📅 Sprint 7 — Polish & React UI Upgrade

@@ -73,7 +73,7 @@
 **AC-Rule:** No secrets in plain env vars anywhere in the deployed stack. No unbounded Cloud Run scaling. Budget alerts must actually reach a human via email.
 **AC-How-critical:** Cloud Logging must capture unhandled exceptions from the FastAPI app, not just HTTP access logs. Budget `notificationsRule` must not be empty.
 
-- [ ] Move `TENNIS_API_KEY` and `THE_ODDS_API_KEY` and `GEMINI_API_KEY` from plain Cloud Run env vars to GCP Secret Manager — wire via Cloud Run secret references
+- [x] Move `TENNIS_API_KEY` and `THE_ODDS_API_KEY` and `GEMINI_API_KEY` from plain Cloud Run env vars to GCP Secret Manager — wire via Cloud Run secret references
 - [ ] Verify Cloud Logging captures errors from the prediction pipeline
 - [ ] Update `README.md` with live URL and deployment instructions
 - [x] Fix GCP budget alert: scope to `tennis-data-487809` only + attach email notification channel so alerts actually fire
