@@ -3,18 +3,26 @@
 ## API Key on the Frontend (Known Limitation)
 
 The React frontend sends an `X-API-Key` header with every `POST /predict` request.
-This key (`VITE_API_KEY`) is stored as an environment variable in the hosting platform
-(Netlify/Vercel) and is **not hardcoded in source code**.
+The key is **hardcoded in the Lovable source code** (`src/pages/Index.tsx`, line 35).
 
-However, `VITE_` prefixed variables in Vite are **embedded into the compiled JavaScript
-bundle at build time**. This means:
+### Why it is hardcoded (not an env var)
 
-- The key does not appear in the GitHub repository.
-- The key **is** visible to anyone who opens DevTools → Sources in their browser.
-- This is a fundamental browser limitation — there is no way to fully hide an API key
-  in a public client-side React application.
+Lovable's Secrets UI only supports runtime server-side secrets (e.g. Supabase keys).
+It explicitly **rejects** `VITE_` prefixed variable names with the error:
+> "VITE_ prefixed variables are build-time browser values and should be defined in .env files."
 
-### Why this is acceptable for this project
+Lovable does not expose a `.env` file editor or a build-secrets panel on any plan tier.
+There is no mechanism to inject `VITE_` vars into a Lovable-hosted build without
+modifying source code directly. Hardcoding is therefore the only practical option for
+this hosting platform.
+
+### Why hardcoding is acceptable here
+
+`VITE_` prefixed variables in Vite are **embedded into the compiled JavaScript bundle
+at build time** regardless of how they are set. An env var and a hardcoded string are
+**identical in the output bundle** — both are visible to anyone who opens
+DevTools → Sources. There is zero security difference between the two approaches
+for a public client-side React application.
 
 The real protection lives on the server side:
 
@@ -22,9 +30,16 @@ The real protection lives on the server side:
 |---|---|
 | Strong key | 64-char hex key generated via `openssl rand -hex 32` |
 | Server-side validation | FastAPI rejects any request without a valid `X-API-Key` |
-| CORS restriction | Cloud Run only accepts requests from `tennis.mateogrisales.com` |
+| CORS restriction | Cloud Run only accepts requests from the Lovable frontend origin |
 | Cost ceiling | Cloud Run capped at 3 max instances — limits blast radius of any abuse |
 | Secrets in Secret Manager | `TENNIS_API_KEY`, `THE_ODDS_API_KEY` stored in GCP Secret Manager, not plain env vars |
+
+### Low-value key = low risk
+
+Even if the key is found in DevTools, the attacker can only call `POST /predict`,
+which returns read-only tennis match predictions. No user data, no database writes,
+no financial transactions. The cost blast radius is bounded by the 3-instance cap
+and The-Odds-API's own rate limiting.
 
 ### Truly secure alternative (not implemented)
 
@@ -38,7 +53,8 @@ For apps where the API key must never be exposed, the pattern is a **backend pro
 If the key is ever compromised:
 1. Generate a new key: `openssl rand -hex 32`
 2. Update in GCP Secret Manager: `echo -n "<new_key>" | gcloud secrets versions add TENNIS_API_KEY --data-file=- --project=tennis-data-487809`
-3. Update `VITE_API_KEY` in Netlify/Vercel env var settings and trigger a redeploy
+3. Redeploy Cloud Run to pick up the new secret version
+4. Update the hardcoded key in Lovable `src/pages/Index.tsx` line 35 and republish
 
 ---
 

@@ -52,8 +52,9 @@ This platform ingests live ATP tennis odds from The-Odds-API, transforms and sto
 - `docs/SECURITY.md` added — documents API key browser exposure caveat, server-side controls, and rotation steps
 - GCP budget alert, Cloud Run max instances cap, and `docs/COST_CONTROLS.md` in place
 - **Public API URL:** `https://tennis-gateway-agmlnd9p.uc.gateway.dev`
-- **Frontend (staging):** `https://orange-court-ai.lovable.app`
-- Remaining: push Lovable code to GitHub → deploy via Netlify → point `tennis.mateogrisales.com`, lock CORS to production domain
+- **Frontend (live):** `https://orange-court-ai.lovable.app` — confirmed working end-to-end
+- `X-API-Key` hardcoded in Lovable source (Lovable has no mechanism to inject `VITE_` env vars — see `docs/SECURITY.md` for rationale)
+- Remaining: point `tennis.mateogrisales.com` to Lovable frontend, lock CORS to production domain
 ### 📅 Sprint 5 — LangGraph Agent Architecture
 ### 📅 Sprint 6 — Data Enrichment & Model Upgrade
 ### 📅 Sprint 7 — Polish & React UI Upgrade
