@@ -63,10 +63,10 @@
 **AC-Rule:** CORS must only allow the production frontend origin — not a wildcard `*`.
 **AC-How-critical:** API key auth must be validated server-side on Cloud Run before the pipeline executes — a request without a valid key must return 401.
 
-- [ ] Configure CORS on Cloud Run to allow frontend origin
-- [ ] Add API key auth to Cloud Run endpoint (not open to the public)
-- [ ] Point subdomain (e.g. `tennis.mateogrisales.com`) to Lovable frontend
-- [ ] End-to-end smoke test on production URL
+- [x] Configure CORS on Cloud Run to allow frontend origin — `CORS_ORIGINS` set to `https://orange-court-ai.lovable.app,https://tennis.mateogrisales.com`
+- [x] Add API key auth to Cloud Run endpoint (not open to the public) — validated by FastAPI `_require_api_key` dependency
+- [x] Point subdomain (`tennis.mateogrisales.com`) to Lovable frontend — DNS configured in GoDaddy, propagation pending (up to 72h)
+- [ ] End-to-end smoke test on production URL — pending DNS propagation
 
 ### Story 4 — Hardening (Definition of Done)
 **AC-What:** The deployed app is observable — errors in the prediction pipeline appear in Cloud Logging, cost overruns trigger email alerts before they grow, and the README documents the live URL and how to redeploy.
