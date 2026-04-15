@@ -15,7 +15,7 @@ This platform ingests live ATP tennis odds from The-Odds-API, transforms and sto
 | Data Lake | Cloud Storage (GCS) |
 | Data Warehouse | BigQuery |
 | Data Source | The-Odds-API v4 |
-| LLM / Agents | Google Gemini Flash |
+| LLM / Agents | Google Gemini Flash (Sprint 3) → ATP scraper (Sprint 4+) |
 | Frontend | Lovable (React) → mateogrisales.com |
 | Backend API | GCP Cloud Run (private) + API Gateway (public) |
 
@@ -39,25 +39,16 @@ This platform ingests live ATP tennis odds from The-Odds-API, transforms and sto
 - Comparison logic: model prob vs bookmaker `raw_implied` (1/price) to surface value bets
 - Local Streamlit demo (`app.py`) — full pipeline behind a single button, results cached in session state
 
-### 🔄 Sprint 4 — Deploy to GCP + mateogrisales.com (In Progress)
-- FastAPI prediction API (`api/main.py`) — `POST /predict`, `GET /health`, `X-API-Key` auth
-- Docker image built via Cloud Build and pushed to GCP Artifact Registry
-- Cloud Run deployed privately in `us-central1` — never exposed directly to the internet
-- GCP API Gateway (`tennis-gateway`) as public-facing layer — enterprise pattern for private Cloud Run
-- `api-gateway-invoker` service account handles gateway → Cloud Run authentication
-- Live ATP rankings scraped from `atptour.com` on every request — always current, no model staleness
-- React UI published at `https://orange-court-ai.lovable.app` — confirmed working end-to-end
-- All secrets (`TENNIS_API_KEY`, `THE_ODDS_API_KEY`, `GEMINI_API_KEY`) moved to GCP Secret Manager — no plain env vars on Cloud Run
-- `TENNIS_API_KEY` rotated from `local-test-key` to a strong 64-char hex key
-- `docs/SECURITY.md` added — documents API key browser exposure caveat, server-side controls, and rotation steps
-- GCP budget alert, Cloud Run max instances cap, and `docs/COST_CONTROLS.md` in place
-- **Public API URL:** `https://tennis-gateway-agmlnd9p.uc.gateway.dev`
-- **Frontend (live):** `https://orange-court-ai.lovable.app` — confirmed working end-to-end
-- `X-API-Key` hardcoded in Lovable source (Lovable has no mechanism to inject `VITE_` env vars — see `docs/SECURITY.md` for rationale)
-- CORS locked to `https://orange-court-ai.lovable.app` and `https://tennis.mateogrisales.com` — no wildcard
-- DNS configured in GoDaddy pointing `tennis.mateogrisales.com` → Lovable frontend (propagation pending)
-- Remaining: end-to-end smoke test on `tennis.mateogrisales.com` once DNS propagates
-### 📅 Sprint 5 — LangGraph Agent Architecture
+### ✅ Sprint 4 — Deploy to GCP + mateogrisales.com
+- FastAPI prediction API on Cloud Run (private) fronted by GCP API Gateway — enterprise pattern for `grisalogic.com` org policy
+- Docker image built via Cloud Build → Artifact Registry — no local Docker required
+- React UI (Lovable) deployed at **[tennis.mateogrisales.com](https://tennis.mateogrisales.com)** — live end-to-end
+- Live ATP rankings scraped from `atptour.com` on every request — no staleness
+- All secrets in GCP Secret Manager — no plain env vars on Cloud Run
+- CORS locked to production origins; Cloud Run capped at 3 max instances; GCP budget alert wired to email
+- Security rationale documented in `docs/SECURITY.md`; cost controls in `docs/COST_CONTROLS.md`
+
+### 📅 Sprint 5 — LangGraph Agent Architecture + Ops
 ### 📅 Sprint 6 — Data Enrichment & Model Upgrade
 ### 📅 Sprint 7 — Polish & React UI Upgrade
 

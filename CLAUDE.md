@@ -32,37 +32,23 @@ Nested JSON flattened with Pandas, schema confirmed via EDA (see `docs/MIAMI_OPE
 - `data/raw/tennis_odds_<timestamp>.json` — raw API response (mirrors GCS)
 - `data/processed/tennis_odds_processed_<timestamp>.csv` — flat transformed data (mirrors BigQuery)
 
-## CURRENT FOCUS: Sprint 4 — Deploy to GCP + mateogrisales.com
+## Sprint 4 (Deploy to GCP + mateogrisales.com) — COMPLETE ✓
 
-**Goal:** Go live as fast as possible with the working ranking-based model. A live public demo is more valuable for the portfolio than a local Streamlit app.
+**Deliverable:** Live public demo at `https://tennis.mateogrisales.com` — React frontend (Lovable) calls FastAPI on Cloud Run via API Gateway, displays live ATP pre-match predictions with value bet signals.
 
-**Story 1 — COMPLETE ✓**
-- `api/main.py`: FastAPI app, `POST /predict` + `GET /health`, `X-API-Key` auth, Pydantic response models, CORS configurable via env var
-- `Dockerfile`: `python:3.12-slim`, built and pushed to Artifact Registry via **Cloud Build** (no local Docker needed)
-- Cloud Run deployed **privately** (`--no-allow-unauthenticated`) in `us-central1` — never exposed directly to the internet
-- **API Gateway** (`tennis-gateway`) deployed as the public-facing layer using `api-gateway.yaml` (OpenAPI spec)
-- `api-gateway-invoker` service account holds `roles/run.invoker` on Cloud Run; gateway authenticates automatically
-- `X-API-Key` auth validated by FastAPI — gateway passes it through, does not validate at gateway layer
+**Architecture:**
+- `api/main.py`: FastAPI, `POST /predict` + `GET /health`, `X-API-Key` auth, CORS via env var
+- Cloud Run private (`--no-allow-unauthenticated`), fronted by API Gateway (`tennis-gateway`) — standard pattern for `grisalogic.com` org policy that blocks `allUsers` IAM bindings
+- `api-gateway-invoker` service account holds `roles/run.invoker`; gateway authenticates automatically
+- All secrets (`TENNIS_API_KEY`, `THE_ODDS_API_KEY`, `GEMINI_API_KEY`) in GCP Secret Manager — no plain env vars on Cloud Run
+- CORS locked to `https://orange-court-ai.lovable.app` and `https://tennis.mateogrisales.com`
+- Cloud Run capped at 3 max instances; GCP budget alert wired to `mateo@grisalogic.com`
+- Live ATP rankings scraped from `atptour.com` on every request — no model staleness
+- **Live URL:** `https://tennis.mateogrisales.com`
 - **Public gateway URL:** `https://tennis-gateway-agmlnd9p.uc.gateway.dev`
 - **Cloud Run URL (private):** `https://tennis-api-er2jgzyldq-uc.a.run.app`
 
-**Story 2 — IN PROGRESS 🔄**
-- React app scaffolded in Lovable — clay orange (#E8650A) design, Roland Garros inspired
-- `POST /predict` wired with `X-API-Key` header (hardcoded `local-test-key` temporarily for testing)
-- CORS preflight (`OPTIONS /predict`) added to `api-gateway.yaml` — gateway config `tennis-api-config-v3` deployed
-- Cloud Run `CORS_ORIGINS` set to Lovable preview domain: `https://fae197c3-a5e9-4e2e-b4c6-c77f45c87b38.lovableproject.com`
-- **Lovable preview confirmed working** — Monte Carlo Masters matches loading with predictions
-
-**Remaining work (Stories 3–5):**
-1. Configure CORS on Cloud Run to allow final frontend origin only (not preview URL)
-2. Deploy live at `tennis.mateogrisales.com`
-3. Move secrets from plain Cloud Run env vars → GCP Secret Manager (Story 4 hardening)
-4. Weekly Claude Code cost review agent (Story 5)
-
-**Story 4 cost controls — DONE ✓**
-- GCP budget alert scoped to `tennis-data-487809`, email notifications wired to `mateo@grisalogic.com` via Cloud Monitoring channel `14755856984491073698`
-- Cloud Run `tennis-api` capped at 3 max instances — hard ceiling against traffic attacks
-- `docs/COST_CONTROLS.md` documents all controls and restore commands
+## CURRENT FOCUS: Sprint 5 — LangGraph Agent Architecture + Ops
 
 **Key lesson from Sprint 1:** Using `_SPORT = "upcoming"` returns all sports, not just tennis.
 **Key lesson from Sprint 3:** Never hardcode tournament sport keys — use `/v4/sports/` to discover active `tennis_atp_*` keys dynamically.
@@ -77,9 +63,9 @@ Nested JSON flattened with Pandas, schema confirmed via EDA (see `docs/MIAMI_OPE
 **Key lesson from Sprint 4:** API Gateway only routes paths defined in the OpenAPI spec — browser CORS preflight (`OPTIONS`) requests must be explicitly defined as a separate method on each path, otherwise the gateway returns 404 and the browser blocks the request.
 **Key lesson from Sprint 4:** `gemini-2.5-flash` with Google Search grounding returns 0 content parts (`response.text = None`) — a known SDK incompatibility with the thinking model. Do not use Gemini for real-time rankings at all. Scrape `atptour.com/en/rankings/singles` directly with `requests` + `BeautifulSoup` — full player names are in the profile link slug (`/en/players/carlos-alcaraz/`), points are in `cells[2]`, and only the first occurrence of each player should be stored (breakdown rows later in the table overwrite totals with tournament-specific points).
 
-## Sprint 5 (Planned) — LangGraph Agent Architecture
+## Sprint 5 (Planned) — LangGraph Agent Architecture + Ops
 
-**Goal:** Refactor the linear pipeline into a proper coordinator → sub-agent graph. LangGraph provides the routing and fallback infrastructure needed before adding more data sources in Sprint 6.
+**Goal:** Refactor the linear pipeline into a proper coordinator → sub-agent graph. LangGraph provides the routing and fallback infrastructure needed before adding more data sources in Sprint 6. Also adds the weekly cost review agent deferred from Sprint 4.
 
 **Trigger:** Introduce LangGraph when the pipeline stops being linear — i.e., when the coordinator needs to make routing decisions, not just call functions in order.
 
@@ -88,6 +74,7 @@ Nested JSON flattened with Pandas, schema confirmed via EDA (see `docs/MIAMI_OPE
 2. Refactor sub-agents (odds, rankings, model, explanation) into LangGraph nodes
 3. Add retry/fallback logic (e.g., ranking fetch fails → use cached data)
 4. Conditional routing based on data availability or confidence thresholds
+5. Weekly cost review agent (scheduled Claude Code agent — checks GCP spend, Cloud Run metrics, flags anomalies)
 
 **Key decision:** Do NOT introduce LangGraph in Sprint 3 or 4. Go live first, refactor second.
 
