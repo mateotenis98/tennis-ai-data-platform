@@ -48,7 +48,7 @@ Nested JSON flattened with Pandas, schema confirmed via EDA (see `docs/MIAMI_OPE
 - **Public gateway URL:** `https://tennis-gateway-agmlnd9p.uc.gateway.dev`
 - **Cloud Run URL (private):** `https://tennis-api-er2jgzyldq-uc.a.run.app`
 
-## CURRENT FOCUS: Sprint 5 — LangGraph Agent Architecture + Ops
+## CURRENT FOCUS: Sprint 6 — LangGraph Agent Architecture + Ops
 
 **Key lesson from Sprint 1:** Using `_SPORT = "upcoming"` returns all sports, not just tennis.
 **Key lesson from Sprint 3:** Never hardcode tournament sport keys — use `/v4/sports/` to discover active `tennis_atp_*` keys dynamically.
@@ -63,9 +63,13 @@ Nested JSON flattened with Pandas, schema confirmed via EDA (see `docs/MIAMI_OPE
 **Key lesson from Sprint 4:** API Gateway only routes paths defined in the OpenAPI spec — browser CORS preflight (`OPTIONS`) requests must be explicitly defined as a separate method on each path, otherwise the gateway returns 404 and the browser blocks the request.
 **Key lesson from Sprint 4:** `gemini-2.5-flash` with Google Search grounding returns 0 content parts (`response.text = None`) — a known SDK incompatibility with the thinking model. Do not use Gemini for real-time rankings at all. Scrape `atptour.com/en/rankings/singles` directly with `requests` + `BeautifulSoup` — full player names are in the profile link slug (`/en/players/carlos-alcaraz/`), points are in `cells[2]`, and only the first occurrence of each player should be stored (breakdown rows later in the table overwrite totals with tournament-specific points).
 
-## Sprint 5 (Planned) — LangGraph Agent Architecture + Ops
+## Sprint 5 (UI Showcase) — COMPLETE ✓
 
-**Goal:** Refactor the linear pipeline into a proper coordinator → sub-agent graph. LangGraph provides the routing and fallback infrastructure needed before adding more data sources in Sprint 6. Also adds the weekly cost review agent deferred from Sprint 4.
+Redesigned `tennis.mateogrisales.com` frontend to be self-explanatory for recruiters. Match cards show inline probability bars (model vs raw_implied), edge %, ranking points, and signal badges. Added hero section, How It Works pipeline explainer, data freshness timestamp with manual refresh button, and warm brand background (`#FFF8F4`). Removed TechStackBar — stack is visible on GitHub, UI kept clean. Mobile verified at 375px. Duration: 1h 50m (Apr 15–16).
+
+## Sprint 6 (Planned) — LangGraph Agent Architecture + Ops
+
+**Goal:** Refactor the linear pipeline into a proper coordinator → sub-agent graph. LangGraph provides the routing and fallback infrastructure needed before adding more data sources in Sprint 7. Also adds the weekly cost review agent deferred from Sprint 4.
 
 **Trigger:** Introduce LangGraph when the pipeline stops being linear — i.e., when the coordinator needs to make routing decisions, not just call functions in order.
 
@@ -78,7 +82,7 @@ Nested JSON flattened with Pandas, schema confirmed via EDA (see `docs/MIAMI_OPE
 
 **Key decision:** Do NOT introduce LangGraph in Sprint 3 or 4. Go live first, refactor second.
 
-## Sprint 6+ (Planned) — Data Enrichment & Model Upgrade
+## Sprint 7+ (Planned) — Data Enrichment & Model Upgrade
 
 **Goal:** Improve prediction quality with richer data sources. Improvements go live immediately since the app is already deployed.
 

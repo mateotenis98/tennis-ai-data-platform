@@ -17,9 +17,10 @@
 |---|---|---|---|---|---|---|
 | **Sprint 3** | End-to-End Prediction MVP | ✓ 1. Dynamic ATP sport key discovery via `/v4/sports/`. ✓ 2. `raw_implied` + `true_implied` columns in `transform.py`. ✓ 3. `data/processed/` CSV output for local sandbox. ✓ 4. Build ranking agent (Gemini Flash + web search) — refactored to accept exact player names from odds API, eliminating name-matching ambiguity. ✓ 5. Build ranking-based probability calculator. ✓ 6. Build comparison & recommendation logic. ✓ 7. Filter in-play matches (`filter_upcoming()`) — live odds reflect score, not pre-match probability. ✓ 8. Wire into local Streamlit UI (`app.py`). | Working local demo: pipeline fetches live ATP odds, filters in-play matches, fetches rankings via Gemini, computes probabilities, displays match cards with value bet signals | 10–12 hrs | Mon Mar 23–Wed Mar 25 | ✅ Done (4h 50m) |
 | **Sprint 4** | Deploy to GCP + mateogrisales.com | 1. Expose prediction pipeline as GCP Cloud Run API. 2. Build minimal React UI in Lovable. 3. Connect frontend to backend API. 4. Deploy live at mateogrisales.com. | Live public demo at [tennis.mateogrisales.com](https://tennis.mateogrisales.com) with the ranking-based model | 8–10 hrs | Thu Mar 26–Tue Apr 15 | ✅ Done (7h) |
-| **Sprint 5** | LangGraph Agent Architecture + Ops | 1. Introduce LangGraph as coordinator layer. 2. Refactor sub-agents (odds, rankings, model, explanation) into LangGraph nodes. 3. Add retry/fallback logic (e.g. ranking fetch fails → cached data). 4. Conditional routing based on data availability or confidence thresholds. 5. Weekly cost review agent (scheduled Claude Code agent). | LangGraph coordinator replacing linear Python orchestration; stateful multi-agent graph; automated cost monitoring | 10–12 hrs | TBD | 📅 Planned |
-| **Sprint 6** | Data Enrichment & Model Upgrade | 1. Add historical H2H data (Sackmann dataset → BigQuery). 2. Add surface/conditions features. 3. Add news/sentiment agent. 4. Upgrade ranking model to logistic regression. 5. Add `docs/ML_ENGINEER.md` agent persona. | Enriched predictions, trained baseline model — improvements go live immediately | 12–15 hrs | TBD | 📅 Planned |
-| **Sprint 7** | Polish & React UI Upgrade | 1. Improve React UI in Lovable (match selection, visualization, recommendation display). 2. Add authentication/rate limiting to backend. 3. Leverage LangGraph checkpointing for async prediction requests. | Polished public demo at mateogrisales.com | 8–10 hrs | TBD | 📅 Planned |
+| **Sprint 5** | UI Showcase | 1. Match card redesign — probability bars, ranking points, edge % highlighted. 2. App context layer — hero section, methodology explainer, tech stack callout, data freshness timestamp. 3. Polish & edge cases — empty/error states, disclaimer, mobile layout. | Recruiter-ready UI at tennis.mateogrisales.com that communicates the Data/AI/ML stack and model reasoning without needing a README | 8–10 hrs | Tue Apr 15–Wed Apr 16 | ✅ Done (1h 50m) |
+| **Sprint 6** | LangGraph Agent Architecture + Ops | 1. Introduce LangGraph as coordinator layer. 2. Refactor sub-agents (odds, rankings, model, explanation) into LangGraph nodes. 3. Add retry/fallback logic (e.g. ranking fetch fails → cached data). 4. Conditional routing based on data availability or confidence thresholds. 5. Weekly cost review agent (scheduled Claude Code agent). | LangGraph coordinator replacing linear Python orchestration; stateful multi-agent graph; automated cost monitoring | 10–12 hrs | TBD | 📅 Planned |
+| **Sprint 7** | Data Enrichment & Model Upgrade | 1. Add historical H2H data (Sackmann dataset → BigQuery). 2. Add surface/conditions features. 3. Add news/sentiment agent. 4. Upgrade ranking model to logistic regression. 5. Add `docs/ML_ENGINEER.md` agent persona. | Enriched predictions, trained baseline model — improvements go live immediately | 12–15 hrs | TBD | 📅 Planned |
+| **Sprint 8** | Advanced UI & Auth | 1. Improve React UI in Lovable (match selection, visualization, recommendation display). 2. Add authentication/rate limiting to backend. 3. Leverage LangGraph checkpointing for async prediction requests. | Polished public demo at mateogrisales.com | 8–10 hrs | TBD | 📅 Planned |
 
 ---
 
@@ -81,7 +82,44 @@
 - [x] Add `docs/COST_CONTROLS.md` documenting all cost protection measures
 
 ### Story 5 — Weekly Cost Review Agent
-> **Moved to Sprint 5.**
+> **Moved to Sprint 6.**
+
+---
+
+## Sprint 5 — Detail
+
+> **Goal:** Make `tennis.mateogrisales.com` self-explanatory to a recruiter or hiring manager. The UI must communicate the Data/AI/ML engineering behind the app — model logic, data sources, stack — without needing a README. No backend changes in this sprint.
+
+### Story 1 — Match Card Redesign
+**AC-What:** Each match card shows both players inline (no expand/collapse) with: ranking position + points, model probability (%), bookmaker raw implied probability (%), edge (model − raw_implied, in pp), and value signal badge per player. Model vs implied shown as side-by-side progress bars. Positive edge is green, negative/zero is grey.
+**AC-Rule:** No backend changes — all fields already in the `/predict` response. Use `raw_implied` (1/price) for the bookmaker bar — NOT `true_implied`. `raw_implied` is what the bookie actually charges; it's the correct threshold for a value bet. `true_implied` has the vig removed and would overstate the edge.
+**AC-How-critical:** Remove `PredictionPanel.tsx` and the expand/collapse `selectedIdx` state — all info is now inline. Match time and tournament context go at the bottom of each card.
+
+- [x] Rewrite `MatchCard.tsx` — both players inline, prob bars, edge %, signal badge per player
+- [x] Delete `PredictionPanel.tsx` — no longer needed
+- [x] Update `Index.tsx` — remove `selectedIdx` expand/collapse state, pass `fetched_at` down
+- [x] Confirm `raw_implied` (not `true_implied`) is used for bookmaker bar and edge display
+
+### Story 2 — App Context Layer
+**AC-What:** A visitor who knows nothing about tennis betting or ML can read the page and understand: what the app does, how the model works, where the data comes from, and what stack powers it — all without leaving the page.
+**AC-Rule:** HowItWorks must describe the 4-step pipeline: ATP scraper → rank-based model → raw implied extraction → value signal. TechStackBar must list: GCP Cloud Run · API Gateway · BigQuery · Python · Gemini API. DataFreshness must use `fetched_at` from the API response.
+**AC-How-critical:** HeroSection disclaimer must be visible above the fold without scrolling on desktop. Keep all sections scannable — this is a portfolio demo, not a blog post.
+
+- [x] Create `HeroSection.tsx` — purpose statement + portfolio disclaimer badge above the fold
+- [x] Create `HowItWorks.tsx` — 4-step pipeline (Scrape → Model → Compare → Signal), 2×2 grid on tablet, single column on mobile
+- [x] ~~Create `TechStackBar.tsx`~~ — removed; stack is visible on GitHub, UI kept clean
+- [x] Create `DataFreshness.tsx` — "Last updated · H:MM AM/PM GMT±X" using `fetched_at`, positioned above match list with Refresh button
+- [x] Compose new layout in `Index.tsx`: Hero → HowItWorks → DataFreshness → MatchList
+
+### Story 3 — Polish & Edge Cases
+**AC-What:** Empty state, error state, and per-match error all render with friendly copy and no raw error text. Mobile layout is usable at 375px. Error state renders inside the Layout (with header/footer) — currently it renders outside.
+**AC-Rule:** Empty state must explain *why* (no upcoming ATP matches) and give context ("Pre-match odds are available 24–48h before tournament days"). Error state must have a Retry button. No raw stack traces or API error strings shown to the user.
+**AC-How-critical:** Error state currently renders outside `Layout` (no header/footer) — fix this so the app stays branded even on failure.
+
+- [x] Rewrite empty state — illustration + friendly headline + context subtext
+- [x] Rewrite error state — move inside `Layout`, friendly copy, Retry button, no raw error text
+- [x] Verify mobile layout at 375px — MatchCard, HowItWorks steps all readable
+- [x] Verify `SignalBadge.tsx` and `TennisBallLoader.tsx` unchanged
 
 ---
 

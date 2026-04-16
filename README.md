@@ -50,9 +50,16 @@ This platform ingests live ATP tennis odds from The-Odds-API, transforms and sto
 - CORS locked to production origins; Cloud Run capped at 3 max instances; GCP budget alert wired to email
 - Security rationale documented in `docs/SECURITY.md`; cost controls in `docs/COST_CONTROLS.md`
 
-### 📅 Sprint 5 — LangGraph Agent Architecture + Ops
-### 📅 Sprint 6 — Data Enrichment & Model Upgrade
-### 📅 Sprint 7 — Polish & React UI Upgrade
+### ✅ Sprint 5 — UI Showcase
+- Match cards redesigned: inline probability bars (model vs bookmaker implied), edge %, ranking points, signal badge per player
+- Hero section with purpose statement and portfolio disclaimer above the fold
+- How It Works: 4-step pipeline explainer (Scrape → Model → Compare → Signal)
+- Data freshness timestamp with manual Refresh button — inline loader keeps existing cards visible
+- Warm brand background (`#FFF8F4`) separates cards visually — confirmed on mobile at 375px
+
+### 📅 Sprint 6 — LangGraph Agent Architecture + Ops
+### 📅 Sprint 7 — Data Enrichment & Model Upgrade
+### 📅 Sprint 8 — Advanced UI & Auth
 
 ## Repository Structure
 ```
