@@ -6,9 +6,9 @@
 
 > Long-lived feature branches not yet merged to `main`. Updated when a branch is created or merged so this file always reflects what's cooking, even if you're working on `main`. Empty when no branches are open.
 
-- **Sprint 6 — LangGraph Agent Architecture** · branch `feature/sprint6-langgraph` · started 2026-04-30
+- **Sprint 6 — LangGraph Agent Architecture** · branch `feature/sprint6-langgraph` · started 2026-04-26
   - ✅ Story 1: scaffold LangGraph graph (state, models, graph stubs)
-  - 🔄 Stories 2–6: pending (real fetch nodes → RAG → structured generation → validation → format response)
+  - 🔄 Stories 2–7 pending — Epics: LangGraph Foundation → RAG Layer → Hallucination Validation → API Integration + Ops. See "Sprint 6 — Detail" below for full AC breakdown.
 
 ## Phase 1: GCP Data Pipeline
 
@@ -26,7 +26,7 @@
 | **Sprint 3** | End-to-End Prediction MVP | ✓ 1. Dynamic ATP sport key discovery via `/v4/sports/`. ✓ 2. `raw_implied` + `true_implied` columns in `transform.py`. ✓ 3. `data/processed/` CSV output for local sandbox. ✓ 4. Build ranking agent (Gemini Flash + web search) — refactored to accept exact player names from odds API, eliminating name-matching ambiguity. ✓ 5. Build ranking-based probability calculator. ✓ 6. Build comparison & recommendation logic. ✓ 7. Filter in-play matches (`filter_upcoming()`) — live odds reflect score, not pre-match probability. ✓ 8. Wire into local Streamlit UI (`app.py`). | Working local demo: pipeline fetches live ATP odds, filters in-play matches, fetches rankings via Gemini, computes probabilities, displays match cards with value bet signals | 10–12 hrs | Mon Mar 23–Wed Mar 25 | ✅ Done (4h 50m) |
 | **Sprint 4** | Deploy to GCP + mateogrisales.com | 1. Expose prediction pipeline as GCP Cloud Run API. 2. Build minimal React UI in Lovable. 3. Connect frontend to backend API. 4. Deploy live at mateogrisales.com. | Live public demo at [tennis.mateogrisales.com](https://tennis.mateogrisales.com) with the ranking-based model | 8–10 hrs | Thu Mar 26–Wed Apr 15 | ✅ Done (7h) |
 | **Sprint 5** | UI Showcase | 1. Match card redesign — probability bars, ranking points, edge % highlighted. 2. App context layer — hero section, methodology explainer, tech stack callout, data freshness timestamp. 3. Polish & edge cases — empty/error states, disclaimer, mobile layout. | Recruiter-ready UI at tennis.mateogrisales.com that communicates the Data/AI/ML stack and model reasoning without needing a README | 8–10 hrs | Wed Apr 15–Thu Apr 16 | ✅ Done (1h 50m) |
-| **Sprint 6** | LangGraph Agent Architecture + Ops | 1. Introduce LangGraph as coordinator layer. 2. Refactor sub-agents (odds, rankings, model, explanation) into LangGraph nodes. 3. Add retry/fallback logic (e.g. ranking fetch fails → cached data). 4. Conditional routing based on data availability or confidence thresholds. 5. Weekly cost review agent (scheduled Claude Code agent). | LangGraph coordinator replacing linear Python orchestration; stateful multi-agent graph; automated cost monitoring | 10–12 hrs | Started 2026-04-30 | 🔄 In Progress (branch `feature/sprint6-langgraph`, Story 1 done) |
+| **Sprint 6** | LangGraph Agent Architecture + Ops | 1. Scaffold `GraphState` + `StateGraph` with conditional retry edge. 2. Migrate odds + rankings nodes into graph. 3. RAG layer: semantic chunking + FAISS vector store. 4. Structured LLM generation with citation anchors (`MatchInsight` Pydantic model). 5. Deterministic hallucination validation node (dictionary lookup, not regex). 6. Expose via versioned `POST /v2/predict` endpoint — existing `/predict` untouched. 7. Weekly cost review agent. | LangGraph coordinator with cyclic validation loop; RAG-grounded structured output; `POST /v2/predict` alongside live `/predict` | 16–23 hrs | Sun Apr 26 | 🔄 In Progress (branch `feature/sprint6-langgraph`, Story 1 done) |
 | **Sprint 7** | Data Enrichment & Model Upgrade | 1. Add historical H2H data (Sackmann dataset → BigQuery). 2. Add surface/conditions features. 3. Add news/sentiment agent. 4. Upgrade ranking model to logistic regression. 5. Add `docs/ML_ENGINEER.md` agent persona. | Enriched predictions, trained baseline model — improvements go live immediately | 12–15 hrs | TBD | 📅 Planned |
 | **Sprint 8** | Advanced UI & Auth | 1. Improve React UI in Lovable (match selection, visualization, recommendation display). 2. Add authentication/rate limiting to backend. 3. Leverage LangGraph checkpointing for async prediction requests. | Polished public demo at mateogrisales.com | 8–10 hrs | TBD | 📅 Planned |
 
@@ -128,6 +128,112 @@
 - [x] Rewrite error state — move inside `Layout`, friendly copy, Retry button, no raw error text
 - [x] Verify mobile layout at 375px — MatchCard, HowItWorks steps all readable
 - [x] Verify `SignalBadge.tsx` and `TennisBallLoader.tsx` unchanged
+
+---
+
+## Sprint 6 — Detail
+
+> **Goal:** Replace the linear prediction pipeline with a stateful LangGraph graph. Introduces a RAG layer (semantic chunking + FAISS), structured LLM output with citation anchors, and a deterministic hallucination validation node with a cyclic retry edge. Exposed via a versioned `POST /v2/predict` endpoint — the existing `/predict` endpoint is never modified.
+>
+> **Branch:** `feature/sprint6-langgraph` — merged to `main` only after end-to-end validation of `/v2/predict`.
+> **Deployment rule:** Both `/predict` and `/v2/predict` run simultaneously on Cloud Run post-merge. Frontend cutover to `/v2/predict` is a separate, independently-reversible change.
+
+---
+
+### Epic 1 — LangGraph Foundation
+
+#### Story 1 — Graph Scaffold + State Definition
+**AC-What:** A `StateGraph` compiles and `graph.invoke()` runs end-to-end using stub node functions that return hardcoded fixtures. No real API calls are made. All nodes, edges, and the conditional retry edge are wired.
+**AC-Rule:** `GraphState` must use `TypedDict`. `llm_insights` field must be typed as `list[MatchInsight]` (not `list[str]`) from the start — no interim string type. Conditional edge must use `add_conditional_edges`, not an `if/else` inside a node body.
+**AC-How-critical:** `retry_count` must be tracked in `GraphState` and incremented by the `validate_output` stub — not in a local variable. The graph must enforce `retry_count <= 2` in the conditional edge router function, not inside the node.
+
+- [x] Define `src/agent/state.py` — `GraphState` TypedDict with all fields including `llm_insights: list[MatchInsight]`
+- [x] Define `src/agent/models.py` — `FactualClaim` and `MatchInsight` Pydantic models
+- [x] Scaffold `src/agent/graph.py` — `StateGraph`, all node stubs registered, edges wired
+- [x] Wire conditional retry edge: `validate_output` → `generate_insight` (retry) or `format_response` (accept/flag)
+- [x] Unit test: `graph.invoke({})` with stub nodes runs without error and returns a `GraphState`
+
+#### Story 2 — Migrate Odds + Rankings Nodes
+**AC-What:** `fetch_odds` and `fetch_rankings` are live graph nodes. Running the graph with these two nodes real (rest stubbed) produces the same match list and rankings dict as the current `/predict` pipeline.
+**AC-Rule:** No business logic changes to the odds or rankings logic — this is a structural migration only. `api/main.py` existing `/predict` route must not be touched.
+**AC-How-critical:** Nodes must read from and write to `GraphState` exclusively — no return values, no side effects outside state.
+
+- [ ] Create `src/agent/nodes/fetch_odds.py` — migrated from `api/main.py`, writes `matches` to state
+- [ ] Create `src/agent/nodes/fetch_rankings.py` — migrated from ATP scraper, writes `rankings` to state
+- [ ] Remove duplicated logic from `api/main.py` once nodes are confirmed equivalent
+- [ ] Integration test: graph with real odds + rankings nodes, rest stubbed — output matches current pipeline
+
+---
+
+### Epic 2 — RAG Layer
+
+#### Story 3 — Document Builder + Semantic Chunker + FAISS Index
+**AC-What:** Given populated `matches` and `rankings` in state, `build_rag_context` produces a FAISS index and a `retrieved_docs_by_id: dict[str, str]` map stored in state. Each chunk ID is stable and unique within a request.
+**AC-Rule:** Chunking must use `SemanticChunker` (embedding-based boundary detection) — not `RecursiveCharacterTextSplitter` or fixed token size. Each chunk document must be formatted as: `"[Player] (Rank #N, P pts) vs [Player] (Rank #N, P pts) — [Tournament] — Odds: A@{price}, B@{price}"`. FAISS index is in-memory only — no persistence to disk.
+**AC-How-critical:** `retrieved_docs_by_id` must be keyed by a deterministic chunk ID (e.g. `f"match_{i}_chunk_{j}"`) so the validator can look up by ID. The FAISS index and the ID map must stay in sync — same order, same keys.
+
+- [ ] Create `src/agent/nodes/build_rag_context.py`
+- [ ] Implement match + player document construction from `GraphState`
+- [ ] Wire `SemanticChunker` for embedding-based boundary splitting
+- [ ] Embed chunks and load into FAISS in-memory index
+- [ ] Store `faiss_index` and `retrieved_docs_by_id` in state
+- [ ] Unit test: N matches → index contains ≥ N chunks, all chunk IDs present in `retrieved_docs_by_id`
+
+#### Story 4 — Structured LLM Generation with Citation Anchors
+**AC-What:** `generate_insight` produces one `MatchInsight` per match pair, stored in `state["llm_insights"]`. Each `MatchInsight.key_claims` contains one `FactualClaim` per factual assertion, with a valid `source_chunk_id` referencing a key in `retrieved_docs_by_id`.
+**AC-Rule:** LLM call must use `llm.with_structured_output(MatchInsight)` — no free-form string generation, no post-hoc JSON parsing. The grounding prompt must explicitly instruct the LLM to use only the provided context and cite the `source_chunk_id` for every factual claim.
+**AC-How-critical:** `retrieved_docs` (the list of chunks returned by the retriever for this match) must be stored in state alongside `retrieved_docs_by_id` — the validator needs both. If `with_structured_output` raises a `ValidationError`, the node must set `validation_passed = False` and write an empty `MatchInsight` — never let a `ValidationError` propagate unhandled to the graph runtime.
+
+- [ ] Create `src/agent/nodes/generate_insight.py`
+- [ ] Retrieve top-K chunks from FAISS index per match pair
+- [ ] Store retrieved chunks in `state["retrieved_docs"]`
+- [ ] Construct grounding prompt with retrieved context
+- [ ] Call `llm.with_structured_output(MatchInsight)` and store result in `state["llm_insights"]`
+- [ ] Handle `ValidationError` — write empty `MatchInsight`, set `validation_passed = False`
+- [ ] Unit test: mock LLM returns valid `MatchInsight` JSON → stored correctly in state
+
+---
+
+### Epic 3 — Hallucination Validation
+
+#### Story 5 — `validate_output` Node + Conditional Retry Edge
+**AC-What:** For each `MatchInsight` in state, every `FactualClaim.value` is cross-referenced against the chunk at `retrieved_docs_by_id[claim.source_chunk_id]`. If any claim value is not found in its source chunk, `validation_passed` is set to `False`. After N=2 failed retries, the insight is accepted but each unverified claim is flagged with `verified: False` — never silently passed through.
+**AC-Rule:** Validation must be a dictionary lookup — `claim.value in retrieved_docs_by_id[claim.source_chunk_id]` — no regex, no NLP similarity scoring. The retry limit is `N=2` (maximum 3 total generation attempts). On retry, `generate_insight` must receive a stricter prompt variant instructing it to reduce the number of factual claims.
+**AC-How-critical:** The conditional edge router must live in `graph.py`, not inside the `validate_output` node. The node sets state; the router reads state and returns the next node name. A missing `source_chunk_id` key in `retrieved_docs_by_id` must be treated as a failed validation (not a `KeyError`).
+
+- [ ] Create `src/agent/nodes/validate_output.py`
+- [ ] Implement claim-level dictionary lookup against `retrieved_docs_by_id`
+- [ ] Set `validation_passed` and increment `retry_count` in state
+- [ ] Flag unverified claims with `verified: False` on retry exhaustion
+- [ ] Add conditional edge router function in `graph.py`
+- [ ] Unit test: inject a `FactualClaim` with a value not present in its source chunk → `validation_passed = False`
+- [ ] Unit test: `retry_count >= 2` with failed validation → router returns `format_response`, claims flagged
+
+---
+
+### Epic 4 — API Integration + Ops
+
+#### Story 6 — Versioned `POST /v2/predict` Endpoint
+**AC-What:** `POST /v2/predict` returns a JSON array structurally identical to `/predict`, with two additional fields per match: `insight` (string, the grounded LLM narrative) and `validation_passed` (bool). The existing `POST /predict` route is byte-for-byte unchanged.
+**AC-Rule:** `/predict` must not be touched — no refactoring, no shared helper extraction that changes its behavior. `/v2/predict` invokes `graph.invoke()` internally. The Pydantic response model for v2 must extend (not replace) the existing model.
+**AC-How-critical:** `graph.invoke()` must be called with a fully initialized `GraphState` — all optional fields defaulted, `retry_count` set to `0`. Unhandled exceptions from the graph must return HTTP 500 with a structured error body, not a raw Python traceback.
+
+- [ ] Add `POST /v2/predict` route to `api/main.py` — existing `/predict` untouched
+- [ ] Define `PredictionV2` Pydantic response model extending existing model with `insight` and `validation_passed`
+- [ ] Wire `graph.invoke()` inside the v2 handler
+- [ ] Add graph-level exception handling → HTTP 500 structured response
+- [ ] Smoke test: `POST /v2/predict` against local server returns valid structured response
+- [ ] End-to-end test on Cloud Run: both `/predict` and `/v2/predict` return 200
+
+#### Story 7 — Weekly Cost Review Agent
+**AC-What:** A scheduled agent runs weekly, queries Cloud Monitoring for Cloud Run invocation count and estimated cost for the past 7 days, and sends a digest email to `mateo@grisalogic.com`. If cost exceeds a configured threshold, the email subject line is prefixed with `[ALERT]`.
+**AC-Rule:** Threshold must be configurable via an env var (`COST_ALERT_THRESHOLD_USD`), not hardcoded. Agent must use the existing GCP service account — no new IAM roles.
+**AC-How-critical:** If the Cloud Monitoring query returns no data (e.g. no invocations that week), the email must still send with a "No activity" message — not silently skip.
+
+- [ ] Implement `scripts/cost_review_agent.py` — Cloud Monitoring query + email digest
+- [ ] Add `COST_ALERT_THRESHOLD_USD` env var to `config.yaml`
+- [ ] Schedule via Cloud Scheduler (weekly, Monday 09:00 America/Bogota)
+- [ ] Test: manual invocation produces a correctly formatted email
 
 ---
 

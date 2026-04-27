@@ -57,7 +57,10 @@ This platform ingests live ATP tennis odds from The-Odds-API, transforms and sto
 - Data freshness timestamp with manual Refresh button — inline loader keeps existing cards visible
 - Warm brand background (`#FFF8F4`) separates cards visually — confirmed on mobile at 375px
 
-### 📅 Sprint 6 — LangGraph Agent Architecture + Ops
+### 🔄 Sprint 6 — LangGraph Agent Architecture + Ops (In Progress)
+- `feature/sprint6-langgraph` branch active
+- Story 1 complete: `GraphState` TypedDict, `MatchInsight`/`FactualClaim` Pydantic models, full `StateGraph` scaffold with cyclic validation retry edge
+- Stories 2–7 in progress
 ### 📅 Sprint 7 — Data Enrichment & Model Upgrade
 ### 📅 Sprint 8 — Advanced UI & Auth
 
@@ -66,7 +69,8 @@ This platform ingests live ATP tennis odds from The-Odds-API, transforms and sto
 src/
   ingestion/      # Data extraction scripts (The-Odds-API → GCS)
   processing/     # ETL: flatten, transform, load to BigQuery
-  agents/         # AI agents (rankings, model, explanation)
+  agents/         # Legacy linear agents (rankings, probability calculator)
+  agent/          # LangGraph graph: state, models, nodes, coordinator (Sprint 6+)
 scripts/          # Dev setup and secret management utilities
 notebooks/        # EDA and exploration
 docs/             # Schema docs and agent persona files

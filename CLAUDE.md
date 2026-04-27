@@ -1,6 +1,10 @@
 # Project: Tennis AI Data Platform
 # Role: Senior GCP Data & ML Engineer
 
+## Local Environment
+- **Always use the project venv** for every Python command: `venv/Scripts/python` and `venv/Scripts/pip` (Windows). Never use the system Python.
+- The venv lives at `venv/` in the repo root (created manually — note: `setup_env.sh` references `.venv` but the active directory is `venv/`).
+
 ## Architecture Rules
 - Cloud Provider: Google Cloud Platform (GCP) exclusively.
 - Language: Python 3.10+.
