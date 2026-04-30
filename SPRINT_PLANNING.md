@@ -2,6 +2,14 @@
 
 > **Note:** This is a living document (Agile workflow). Dates, hours, and specific technologies may be adapted as the project evolves.
 
+## In Flight
+
+> Long-lived feature branches not yet merged to `main`. Updated when a branch is created or merged so this file always reflects what's cooking, even if you're working on `main`. Empty when no branches are open.
+
+- **Sprint 6 — LangGraph Agent Architecture** · branch `feature/sprint6-langgraph` · started 2026-04-30
+  - ✅ Story 1: scaffold LangGraph graph (state, models, graph stubs)
+  - 🔄 Stories 2–6: pending (real fetch nodes → RAG → structured generation → validation → format response)
+
 ## Phase 1: GCP Data Pipeline
 
 | Sprint | Primary Objective | Key Tasks | Functional Deliverable | Est. Hours | Dates | Status |
@@ -18,7 +26,7 @@
 | **Sprint 3** | End-to-End Prediction MVP | ✓ 1. Dynamic ATP sport key discovery via `/v4/sports/`. ✓ 2. `raw_implied` + `true_implied` columns in `transform.py`. ✓ 3. `data/processed/` CSV output for local sandbox. ✓ 4. Build ranking agent (Gemini Flash + web search) — refactored to accept exact player names from odds API, eliminating name-matching ambiguity. ✓ 5. Build ranking-based probability calculator. ✓ 6. Build comparison & recommendation logic. ✓ 7. Filter in-play matches (`filter_upcoming()`) — live odds reflect score, not pre-match probability. ✓ 8. Wire into local Streamlit UI (`app.py`). | Working local demo: pipeline fetches live ATP odds, filters in-play matches, fetches rankings via Gemini, computes probabilities, displays match cards with value bet signals | 10–12 hrs | Mon Mar 23–Wed Mar 25 | ✅ Done (4h 50m) |
 | **Sprint 4** | Deploy to GCP + mateogrisales.com | 1. Expose prediction pipeline as GCP Cloud Run API. 2. Build minimal React UI in Lovable. 3. Connect frontend to backend API. 4. Deploy live at mateogrisales.com. | Live public demo at [tennis.mateogrisales.com](https://tennis.mateogrisales.com) with the ranking-based model | 8–10 hrs | Thu Mar 26–Wed Apr 15 | ✅ Done (7h) |
 | **Sprint 5** | UI Showcase | 1. Match card redesign — probability bars, ranking points, edge % highlighted. 2. App context layer — hero section, methodology explainer, tech stack callout, data freshness timestamp. 3. Polish & edge cases — empty/error states, disclaimer, mobile layout. | Recruiter-ready UI at tennis.mateogrisales.com that communicates the Data/AI/ML stack and model reasoning without needing a README | 8–10 hrs | Wed Apr 15–Thu Apr 16 | ✅ Done (1h 50m) |
-| **Sprint 6** | LangGraph Agent Architecture + Ops | 1. Introduce LangGraph as coordinator layer. 2. Refactor sub-agents (odds, rankings, model, explanation) into LangGraph nodes. 3. Add retry/fallback logic (e.g. ranking fetch fails → cached data). 4. Conditional routing based on data availability or confidence thresholds. 5. Weekly cost review agent (scheduled Claude Code agent). | LangGraph coordinator replacing linear Python orchestration; stateful multi-agent graph; automated cost monitoring | 10–12 hrs | TBD | 📅 Planned |
+| **Sprint 6** | LangGraph Agent Architecture + Ops | 1. Introduce LangGraph as coordinator layer. 2. Refactor sub-agents (odds, rankings, model, explanation) into LangGraph nodes. 3. Add retry/fallback logic (e.g. ranking fetch fails → cached data). 4. Conditional routing based on data availability or confidence thresholds. 5. Weekly cost review agent (scheduled Claude Code agent). | LangGraph coordinator replacing linear Python orchestration; stateful multi-agent graph; automated cost monitoring | 10–12 hrs | Started 2026-04-30 | 🔄 In Progress (branch `feature/sprint6-langgraph`, Story 1 done) |
 | **Sprint 7** | Data Enrichment & Model Upgrade | 1. Add historical H2H data (Sackmann dataset → BigQuery). 2. Add surface/conditions features. 3. Add news/sentiment agent. 4. Upgrade ranking model to logistic regression. 5. Add `docs/ML_ENGINEER.md` agent persona. | Enriched predictions, trained baseline model — improvements go live immediately | 12–15 hrs | TBD | 📅 Planned |
 | **Sprint 8** | Advanced UI & Auth | 1. Improve React UI in Lovable (match selection, visualization, recommendation display). 2. Add authentication/rate limiting to backend. 3. Leverage LangGraph checkpointing for async prediction requests. | Polished public demo at mateogrisales.com | 8–10 hrs | TBD | 📅 Planned |
 

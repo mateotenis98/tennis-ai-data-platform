@@ -94,11 +94,13 @@ Redesigned `tennis.mateogrisales.com` frontend to be self-explanatory for recrui
 5. Add `docs/ML_ENGINEER.md` agent persona
 
 ## Sprint Session Protocol
-At the start of ANY session where the user mentions a sprint, story, or task (e.g. "let's work on Sprint 4", "continue", "what's next"):
+At the start of ANY session where the user mentions a sprint, story, or task (e.g. "let's work on Sprint 4", "continue", "what's next"), or asks for project context/status:
 1. Read `SPRINT_PLANNING.md` immediately — before asking questions or writing code
-2. Report back: current sprint, what's completed ✅, what's in progress 🔄, and the recommended next task
-3. Propose the next subtask and ask for confirmation before starting
-4. When a subtask is completed, update the checkbox in `SPRINT_PLANNING.md` before moving on
+2. Run `git branch -a` and `git fetch` to detect any in-flight feature branches not yet merged to main. For each non-main branch, run `git log --oneline main..origin/<branch>` to see what work exists there. The "In Flight" section of `SPRINT_PLANNING.md` should list these — if it's missing or stale, surface that to the user.
+3. Report back: current sprint, what's completed ✅, what's in progress 🔄 (including unmerged branches), and the recommended next task
+4. Propose the next subtask and ask for confirmation before starting
+5. When a subtask is completed, update the checkbox in `SPRINT_PLANNING.md` before moving on
+6. When a feature branch is created or merged, update the "In Flight" section of `SPRINT_PLANNING.md` accordingly — and commit that change directly to `main` if the branch is long-lived, so main always reflects what's cooking.
 
 When working on sprint planning, story sizing, or backlog decisions, read `docs/PRODUCT_OWNER.md` first.
 
