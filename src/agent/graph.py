@@ -1,20 +1,13 @@
 from langgraph.graph import END, StateGraph
 
+from src.agent.nodes.fetch_odds import fetch_odds
+from src.agent.nodes.fetch_rankings import fetch_rankings
 from src.agent.state import GraphState
 
 # ---------------------------------------------------------------------------
-# Node stubs — replaced with real implementations in Stories 2–6
+# Node stubs — replaced with real implementations in Stories 3–6
+# (fetch_odds and fetch_rankings are live as of Story 2.)
 # ---------------------------------------------------------------------------
-
-def fetch_odds(state: GraphState) -> dict:
-    """Stub: populated in Story 2 with live Odds-API call."""
-    return {"matches": state.get("matches", [])}
-
-
-def fetch_rankings(state: GraphState) -> dict:
-    """Stub: populated in Story 2 with live ATP scraper."""
-    return {"rankings": state.get("rankings", {})}
-
 
 def build_rag_context(state: GraphState) -> dict:
     """Stub: populated in Story 3 with SemanticChunker + FAISS index build."""

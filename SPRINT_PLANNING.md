@@ -8,7 +8,8 @@
 
 - **Sprint 6 — LangGraph Agent Architecture** · branch `feature/sprint6-langgraph` · started 2026-04-26
   - ✅ Story 1: scaffold LangGraph graph (state, models, graph stubs)
-  - 🔄 Stories 2–7 pending — Epics: LangGraph Foundation → RAG Layer → Hallucination Validation → API Integration + Ops. See "Sprint 6 — Detail" below for full AC breakdown.
+  - ✅ Story 2: migrate odds + rankings nodes — live fetch nodes integrated, end-to-end smoke test passed
+  - 🔄 Stories 3–7 pending — next: RAG layer (semantic chunking + FAISS). See "Sprint 6 — Detail" below for full AC breakdown.
 
 ## Phase 1: GCP Data Pipeline
 
@@ -158,10 +159,10 @@
 **AC-Rule:** No business logic changes to the odds or rankings logic — this is a structural migration only. `api/main.py` existing `/predict` route must not be touched.
 **AC-How-critical:** Nodes must read from and write to `GraphState` exclusively — no return values, no side effects outside state.
 
-- [ ] Create `src/agent/nodes/fetch_odds.py` — migrated from `api/main.py`, writes `matches` to state
-- [ ] Create `src/agent/nodes/fetch_rankings.py` — migrated from ATP scraper, writes `rankings` to state
-- [ ] Remove duplicated logic from `api/main.py` once nodes are confirmed equivalent
-- [ ] Integration test: graph with real odds + rankings nodes, rest stubbed — output matches current pipeline
+- [x] Create `src/agent/nodes/fetch_odds.py` — migrated from `api/main.py`, writes `matches` (DataFrame) + `matches_total` + `matches_filtered_inplay` to state
+- [x] Create `src/agent/nodes/fetch_rankings.py` — migrated from ATP scraper, writes `rankings` (`dict[str, dict[str, int]]`) to state
+- [ ] Remove duplicated logic from `api/main.py` — deferred to Story 6 (cannot remove until `/v2/predict` is wired up; AC-Rule forbids touching the existing `/predict` route)
+- [x] Integration test: live graph invocation with real fetch nodes, rest stubbed — Madrid Open smoke test passed (2 events, 4 players, 100% ranking match, all stub fields populated downstream)
 
 ---
 

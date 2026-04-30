@@ -1,5 +1,6 @@
 from typing import Any
 
+import pandas as pd
 from typing_extensions import TypedDict
 
 from src.agent.models import MatchInsight
@@ -13,8 +14,10 @@ class GraphState(TypedDict):
     """
 
     # --- Epic 1: fetched data ---
-    matches: list[dict]           # raw upcoming matches from The-Odds-API
-    rankings: dict[str, int]      # player name → ATP rank position
+    matches: pd.DataFrame                  # post-filter, post-flatten DataFrame (one row per outcome) — written by fetch_odds
+    matches_total: int                     # count of distinct events fetched BEFORE in-play filter (for response metadata)
+    matches_filtered_inplay: int           # count of in-play events dropped by filter_upcoming (for response metadata)
+    rankings: dict[str, dict[str, int]]    # odds-API player name → {"rank": int, "points": int} — written by fetch_rankings
 
     # --- Epic 2: RAG layer ---
     faiss_index: Any              # in-memory FAISS index (built per request)
